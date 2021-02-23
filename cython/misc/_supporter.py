@@ -2,7 +2,7 @@ from telethon.tl.types import ChatBannedRights
 import os
 from .. import *
 from ..utils import *
-from pyUltroid.misc._decorators import *
+from cython.misc._decorators import *
 import re
 import inspect
 import functools
