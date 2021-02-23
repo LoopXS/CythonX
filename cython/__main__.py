@@ -38,24 +38,24 @@ logging.basicConfig(
 
 
 ultroid_bot.asst = None
-print("Initialising...")
+LOGS.warning("Initialising...")
 if Var.BOT_TOKEN is not None:
-    print("Starting CɪᴘʜᴇʀX Bot...")
+    LOGS.warning("Starting CɪᴘʜᴇʀX Bot...")
     try:
         ultroid_bot.asst = TelegramClient(
             "BOT_TOKEN", api_id=Var.API_ID, api_hash=Var.API_HASH
         ).start(bot_token=Var.BOT_TOKEN)
         ultroid_bot.loop.run_until_complete(istart(Var.BOT_USERNAME))
-        print("User Mode - Done")
-        print("Done, startup completed")
+        LOGS.warning("User Mode - Done")
+        LOGS.warning("Done, startup completed")
     except AuthKeyDuplicatedError:
-        print("Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping...")
+        LOGS.warning("Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping...")
         exit(1)
     except BaseException as e:
-        print("Error: " + str(e))
+        LOGS.warning("Error: " + str(e))
         exit(1)
 else:
-    print("Starting User Mode...")
+    LOGS.warning("Starting User Mode...")
     ultroid_bot.start()
 
 # for userbot
@@ -68,15 +68,15 @@ for name in files:
         try:
             load_plugins(plugin_name.replace(".py", ""))
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                print(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
+                LOGS.warning(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
         except Exception as e:
-            print(f"CɪᴘʜᴇʀX Bot - Official - ERROR - {plugin_name}")
-            print(str(e))
+            LOGS.warning(f"CɪᴘʜᴇʀX Bot - Official - ERROR - {plugin_name}")
+            LOGS.warning(str(e))
 
 # for addons
 if Var.ADDONS:
     os.system("git clone https://github.com/CipherX1-ops/Megatron-addons.git ./addons/")
-    print("Installing packages for addons")
+    LOGS.warning("Installing packages for addons")
     os.system("pip install -r ./addons/addons.txt")
     path = "addons/*.py"
     files = glob.glob(path)
@@ -87,10 +87,10 @@ if Var.ADDONS:
             try:
                 load_addons(plugin_name.replace(".py", ""))
                 if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                    print(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
+                    LOGS.warning(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
             except Exception as e:
-                print(f"CɪᴘʜᴇʀX Bot - Addons - ERROR - {plugin_name}")
-                print(str(e))
+                LOGS.warning(f"CɪᴘʜᴇʀX Bot - Addons - ERROR - {plugin_name}")
+                LOGS.warning(str(e))
 
 # for assistant
 path = "assistant/*.py"
@@ -102,10 +102,10 @@ for name in files:
         try:
             load_assistant(plugin_name.replace(".py", ""))
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                print(f"CɪᴘʜᴇʀX Bot - Assistant - Installed - {plugin_name}")
+                LOGS.warning(f"CɪᴘʜᴇʀX Bot - Assistant - Installed - {plugin_name}")
         except Exception as e:
-            print(f"CɪᴘʜᴇʀX Bot - Assistant - ERROR - {plugin_name}")
-            print(str(e))
+            LOGS.warning(f"CɪᴘʜᴇʀX Bot - Assistant - ERROR - {plugin_name}")
+            LOGS.warning(str(e))
 
 # for channel plugin
 if Var.PLUGIN_CHANNEL if Var.PLUGIN_CHANNEL else udB.get("PLUGIN_CHANNEL"):
@@ -136,16 +136,16 @@ if Var.PLUGIN_CHANNEL if Var.PLUGIN_CHANNEL else udB.get("PLUGIN_CHANNEL"):
                 name = upath.stem
                 try:
                     load_addons(name.replace(".py", ""))
-                    print(
+                    LOGS.warning(
                         f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - Installed - {(os.path.basename(file))}"
                     )
                 except Exception as e:
-                    print(
+                    LOGS.warning(
                         f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - ERROR - {(os.path.basename(file))}"
                     )
-                    print(str(e))
+                    LOGS.warning(str(e))
             else:
-                print(f"Plugin {(os.path.basename(file))} is Pre Installed")
+                LOGS.warning(f"Plugin {(os.path.basename(file))} is Pre Installed")
 
 
 # msg forwarder
@@ -157,7 +157,7 @@ if Var.MSG_FRWD:
             patt = Path(a.name)
             plugin_name = patt.stem
             load_pmbot(plugin_name.replace(".py", ""))
-    print(f"CɪᴘʜᴇʀX Bot - PM Bot Message Forwards - Enabled.")
+    LOGS.warning(f"CɪᴘʜᴇʀX Bot - PM Bot Message Forwards - Enabled.")
 
 
 async def hehe():
@@ -184,7 +184,7 @@ ultroid_bot.loop.run_until_complete(hehe())
 if Var.PLUGIN_CHANNEL:
     ultroid_bot.loop.run_until_complete(plug()) 
 
-print("CɪᴘʜᴇʀX Bot has been deployed! **CɪᴘʜᴇʀX Exclusive**")
+LOGS.warning("CɪᴘʜᴇʀX Bot has been deployed! **CɪᴘʜᴇʀX Exclusive**")
 
 if __name__ == "__main__":
     ultroid_bot.run_until_disconnected()
