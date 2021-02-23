@@ -9,8 +9,5 @@ echo "
 	    °•° Honor CɪᴘʜᴇʀX •°•
 
 "
-apt-get update
-apt-get upgrade -y
-apt-get autoremove --purge
-pip3 install -r requirements.txt
 python3 -m setup.py
+python3 -m cython
