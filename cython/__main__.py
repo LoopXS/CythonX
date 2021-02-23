@@ -8,7 +8,9 @@ import telethon.utils
 from .utils import *
 from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
 from telethon.tl.functions.channels import JoinChannelRequest
+from telethon.tl.functions.channels import LeaveChannelRequest
 from telethon.tl.types import InputMessagesFilterDocument
+from telethon.tl.functions.channels import EditBannedRequest
 
 if Var.GDRIVE_TOKEN:
     with open("resources/downloads/auth_token.txt", "w") as t_file:
@@ -36,24 +38,24 @@ logging.basicConfig(
 
 
 ultroid_bot.asst = None
-LOGS.warning("Initialising...")
+print("Initialising...")
 if Var.BOT_TOKEN is not None:
-    LOGS.warning("Starting CɪᴘʜᴇʀX Bot...")
+    print("Starting CɪᴘʜᴇʀX Bot...")
     try:
         ultroid_bot.asst = TelegramClient(
             "BOT_TOKEN", api_id=Var.API_ID, api_hash=Var.API_HASH
         ).start(bot_token=Var.BOT_TOKEN)
         ultroid_bot.loop.run_until_complete(istart(Var.BOT_USERNAME))
-        LOGS.warning("User Mode - Done")
-        LOGS.warning("Done, startup completed")
+        print("User Mode - Done")
+        print("Done, startup completed")
     except AuthKeyDuplicatedError:
-        LOGS.warning("Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping...")
+        print("Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping...")
         exit(1)
-    except BaseException:
-        LOGS.warning("Bot token expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping...")
+    except BaseException as e:
+        print("Error: " + str(e))
         exit(1)
 else:
-    LOGS.warning("Starting User Mode...")
+    print("Starting User Mode...")
     ultroid_bot.start()
 
 # for userbot
@@ -66,15 +68,15 @@ for name in files:
         try:
             load_plugins(plugin_name.replace(".py", ""))
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                LOGS.warning(f"CɪᴘʜᴇʀX - Official -  Installed - {plugin_name}")
+                print(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
         except Exception as e:
-            LOGS.warning(f"CɪᴘʜᴇʀX - Official - ERROR - {plugin_name}")
-            LOGS.warning(str(e))
+            print(f"CɪᴘʜᴇʀX Bot - Official - ERROR - {plugin_name}")
+            print(str(e))
 
 # for addons
 if Var.ADDONS:
     os.system("git clone https://github.com/CipherX1-ops/Megatron-addons.git ./addons/")
-    LOGS.warning("Installing packages for addons")
+    print("Installing packages for addons")
     os.system("pip install -r ./addons/addons.txt")
     path = "addons/*.py"
     files = glob.glob(path)
@@ -85,10 +87,10 @@ if Var.ADDONS:
             try:
                 load_addons(plugin_name.replace(".py", ""))
                 if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                    LOGS.warning(f"CɪᴘʜᴇʀX - Addons - Installed - {plugin_name}")
+                    print(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
             except Exception as e:
-                LOGS.warning(f"CɪᴘʜᴇʀX - Addons - ERROR - {plugin_name}")
-                LOGS.warning(str(e))
+                print(f"CɪᴘʜᴇʀX Bot - Addons - ERROR - {plugin_name}")
+                print(str(e))
 
 # for assistant
 path = "assistant/*.py"
@@ -100,10 +102,10 @@ for name in files:
         try:
             load_assistant(plugin_name.replace(".py", ""))
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                LOGS.warning(f"CɪᴘʜᴇʀX - Assistant - Installed - {plugin_name}")
+                print(f"CɪᴘʜᴇʀX Bot - Assistant - Installed - {plugin_name}")
         except Exception as e:
-            LOGS.warning(f"CɪᴘʜᴇʀX - Assistant - ERROR - {plugin_name}")
-            LOGS.warning(str(e))
+            print(f"CɪᴘʜᴇʀX Bot - Assistant - ERROR - {plugin_name}")
+            print(str(e))
 
 # for channel plugin
 if Var.PLUGIN_CHANNEL if Var.PLUGIN_CHANNEL else udB.get("PLUGIN_CHANNEL"):
@@ -134,16 +136,16 @@ if Var.PLUGIN_CHANNEL if Var.PLUGIN_CHANNEL else udB.get("PLUGIN_CHANNEL"):
                 name = upath.stem
                 try:
                     load_addons(name.replace(".py", ""))
-                    LOGS.warning(
-                        f"CɪᴘʜᴇʀX - PLUGIN_CHANNEL - Installed - {(os.path.basename(file))}"
+                    print(
+                        f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - Installed - {(os.path.basename(file))}"
                     )
                 except Exception as e:
-                    LOGS.warning(
-                        f"CɪᴘʜᴇʀX - PLUGIN_CHANNEL - ERROR - {(os.path.basename(file))}"
+                    print(
+                        f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - ERROR - {(os.path.basename(file))}"
                     )
-                    LOGS.warning(str(e))
+                    print(str(e))
             else:
-                LOGS.warning(f"Plugin {(os.path.basename(file))} is Pre Installed")
+                print(f"Plugin {(os.path.basename(file))} is Pre Installed")
 
 
 # msg forwarder
@@ -155,7 +157,7 @@ if Var.MSG_FRWD:
             patt = Path(a.name)
             plugin_name = patt.stem
             load_pmbot(plugin_name.replace(".py", ""))
-    LOGS.warning(f"CɪᴘʜᴇʀX - PM Bot Message Forwards - Enabled.")
+    print(f"CɪᴘʜᴇʀX Bot - PM Bot Message Forwards - Enabled.")
 
 
 async def hehe():
@@ -166,12 +168,12 @@ async def hehe():
                 f"**CɪᴘʜᴇʀX Bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**CɪᴘʜᴇʀX Exclusive**\n➖➖➖➖➖➖➖➖➖",
             )
         except BaseException:
-            await ultroid_bot.asst.send_message(
-                ultroid_bot.me.id,
-                f"**CɪᴘʜᴇʀX Bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**CɪᴘʜᴇʀX Exclusive**\n➖➖➖➖➖➖➖➖➖",
-            )
+            pass
     else:
-        await ultroid_bot.send_message(Var.LOG_CHANNEL, f"**CɪᴘʜᴇʀX Bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**CɪᴘʜᴇʀX Exclusive**\n➖➖➖➖➖➖➖➖➖")
+        await ultroid_bot.send_message(
+            Var.LOG_CHANNEL,
+            f"**CɪᴘʜᴇʀX Bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**CɪᴘʜᴇʀX Exclusive**\n➖➖➖➖➖➖➖➖➖",
+        )
     try:
         await ultroid_bot(JoinChannelRequest("@Hackintush"))
     except BaseException:
@@ -180,9 +182,9 @@ async def hehe():
 
 ultroid_bot.loop.run_until_complete(hehe())
 if Var.PLUGIN_CHANNEL:
-    ultroid_bot.loop.run_until_complete(plug())
+    ultroid_bot.loop.run_until_complete(plug()) 
 
-LOGS.warning("CɪᴘʜᴇʀX Bot has been deployed! \n**CɪᴘʜᴇʀX Exclusive**")
+print("CɪᴘʜᴇʀX Bot has been deployed! **CɪᴘʜᴇʀX Exclusive**")
 
 if __name__ == "__main__":
     ultroid_bot.run_until_disconnected()
