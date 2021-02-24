@@ -50,13 +50,31 @@ from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.file import Storage
 from mimetypes import guess_type
 
-OAUTH_SCOPE = "https://www.googleapis.com/auth/drive.file"	
-REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"	
-parent_id = Var.GDRIVE_FOLDER_ID	
+OAUTH_SCOPE = "https://www.googleapis.com/auth/drive.file"
+REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
+parent_id = Var.GDRIVE_FOLDER_ID
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 
 telegraph = Telegraph()
-telegraph.create_account(short_name="CɪᴘʜᴇʀX ⲃⲟⲧ Commands")
+telegraph.create_account(short_name="CɪᴘʜᴇʀX Bot Commands")
+
+async def ban_time(event, time_str):
+	if any(time_str.endswith(unit) for unit in ('m', 'h', 'd')):
+		unit = time_str[-1]
+		time_int = time_str[:-1]
+		if not time_int.isdigit():
+			return await event.edit("Invalid time amount specified.")
+		if unit == 'm':
+			bantime = int(time.time() + int(time_int) * 60)
+		elif unit == 'h':
+			bantime = int(time.time() + int(time_int) * 60 * 60)
+		elif unit == 'd':
+			bantime = int(time.time() + int(time_int) * 24 * 60 * 60)
+		else:
+			return ""
+		return bantime
+	else:
+		return await event.edit("Invalid time type specified. Expected m,h, or d, got: {}".format(time_int[-1]))
 
 
 def dl(app_name, path):
@@ -82,157 +100,162 @@ def dl(app_name, path):
                 f.write(r.content)
                 return f"{path}/{name}.apk"
 
-# gdrive 
 
-async def gsearch(http, query, filename):	
-    drive_service = build("drive", "v2", http=http)	
-    page_token = None	
-    msg = "**CɪᴘʜᴇʀX G-Drive Search Query**\n`" + filename + "`\n**Results**\n"	
-    while True:	
-        response = (	
-            drive_service.files()	
-            .list(	
-                q=query,	
-                spaces="drive",	
-                fields="nextPageToken, items(id, title, mimeType)",	
-                pageToken=page_token,	
-            )	
-            .execute()	
-        )	
-        for file in response.get("items", []):	
-            if file.get("mimeType") == "application/vnd.google-apps.folder":	
-                msg += (	
-                    "⁍ [{}](https://drive.google.com/drive/folders/{}) (folder)".format(	
-                        file.get("title"), file.get("id")	
-                    )	
-                    + "\n"	
-                )	
-            else:	
-                msg += (	
-                    "⁍ [{}](https://drive.google.com/uc?id={}&export=download)".format(	
-                        file.get("title"), file.get("id")	
-                    )	
-                    + "\n"	
-                )	
-        page_token = response.get("nextPageToken", None)	
-        if page_token is None:	
-            break	
-    return msg	
+# gdrive
 
 
-async def create_directory(http, directory_name, parent_id):	
-    drive_service = build("drive", "v2", http=http, cache_discovery=False)	
-    permissions = {"role": "reader", "type": "anyone", "value": None, "withLink": True}	
-    file_metadata = {"title": directory_name, "mimeType": G_DRIVE_DIR_MIME_TYPE}	
-    if parent_id is not None:	
-        file_metadata["parents"] = [{"id": parent_id}]	
-    file = drive_service.files().insert(body=file_metadata).execute()	
-    file_id = file.get("id")	
-    drive_service.permissions().insert(fileId=file_id, body=permissions).execute()	
-    return file_id	
+async def gsearch(http, query, filename):
+    drive_service = build("drive", "v2", http=http)
+    page_token = None
+    msg = "**CɪᴘʜᴇʀX G-Drive Search Query**\n`" + filename + "`\n**Results**\n"
+    while True:
+        response = (
+            drive_service.files()
+            .list(
+                q=query,
+                spaces="drive",
+                fields="nextPageToken, items(id, title, mimeType)",
+                pageToken=page_token,
+            )
+            .execute()
+        )
+        for file in response.get("items", []):
+            if file.get("mimeType") == "application/vnd.google-apps.folder":
+                msg += (
+                    "⁍ [{}](https://drive.google.com/drive/folders/{}) (folder)".format(
+                        file.get("title"), file.get("id")
+                    )
+                    + "\n"
+                )
+            else:
+                msg += (
+                    "⁍ [{}](https://drive.google.com/uc?id={}&export=download)".format(
+                        file.get("title"), file.get("id")
+                    )
+                    + "\n"
+                )
+        page_token = response.get("nextPageToken", None)
+        if page_token is None:
+            break
+    return msg
 
 
-async def DoTeskWithDir(http, input_directory, event, parent_id):	
-    list_dirs = os.listdir(input_directory)	
-    if len(list_dirs) == 0:	
-        return parent_id	
-    r_p_id = None	
-    for a_c_f_name in list_dirs:	
-        current_file_name = os.path.join(input_directory, a_c_f_name)	
-        if os.path.isdir(current_file_name):	
-            current_dir_id = await create_directory(http, a_c_f_name, parent_id)	
-            r_p_id = await DoTeskWithDir(http, current_file_name, event, current_dir_id)	
-        else:	
-            file_name, mime_type = file_ops(current_file_name)	
-            g_drive_link = await upload_file(	
-                http, current_file_name, file_name, mime_type, event, parent_id	
-            )	
-            r_p_id = parent_id	
-    return r_p_id	
+async def create_directory(http, directory_name, parent_id):
+    drive_service = build("drive", "v2", http=http, cache_discovery=False)
+    permissions = {"role": "reader", "type": "anyone", "value": None, "withLink": True}
+    file_metadata = {"title": directory_name, "mimeType": G_DRIVE_DIR_MIME_TYPE}
+    if parent_id is not None:
+        file_metadata["parents"] = [{"id": parent_id}]
+    file = drive_service.files().insert(body=file_metadata).execute()
+    file_id = file.get("id")
+    drive_service.permissions().insert(fileId=file_id, body=permissions).execute()
+    return file_id
 
 
-def file_ops(file_path):	
-    mime_type = guess_type(file_path)[0]	
-    mime_type = mime_type if mime_type else "text/plain"	
-    file_name = file_path.split("/")[-1]	
-    return file_name, mime_type	
-
-async def create_token_file(token_file, event):	
-    flow = OAuth2WebServerFlow(	
-        Var.GDRIVE_CLIENT_ID,	
-        Var.GDRIVE_CLIENT_SECRET,	
-        OAUTH_SCOPE,	
-        redirect_uri=REDIRECT_URI,	
-    )	
-    authorize_url = flow.step1_get_authorize_url()	
-    async with ultroid_bot.conversation(Var.LOG_CHANNEL) as conv:	
-        await conv.send_message(	
-            f"Go to the following link in your browser: {authorize_url} and reply the code"	
-        )	
-        response = conv.wait_event(events.NewMessage(chats=Var.LOG_CHANNEL))	
-        response = await response	
-        code = response.message.message.strip()	
-        credentials = flow.step2_exchange(code)	
-        storage = Storage(token_file)	
-        storage.put(credentials)	
-        return storage	
+async def DoTeskWithDir(http, input_directory, event, parent_id):
+    list_dirs = os.listdir(input_directory)
+    if len(list_dirs) == 0:
+        return parent_id
+    r_p_id = None
+    for a_c_f_name in list_dirs:
+        current_file_name = os.path.join(input_directory, a_c_f_name)
+        if os.path.isdir(current_file_name):
+            current_dir_id = await create_directory(http, a_c_f_name, parent_id)
+            r_p_id = await DoTeskWithDir(http, current_file_name, event, current_dir_id)
+        else:
+            file_name, mime_type = file_ops(current_file_name)
+            g_drive_link = await upload_file(
+                http, current_file_name, file_name, mime_type, event, parent_id
+            )
+            r_p_id = parent_id
+    return r_p_id
 
 
-def authorize(token_file, storage):	
-    if storage is None:	
-        storage = Storage(token_file)	
-    credentials = storage.get()	
-    http = httplib2.Http()	
-    credentials.refresh(http)	
-    http = credentials.authorize(http)	
-    return http	
+def file_ops(file_path):
+    mime_type = guess_type(file_path)[0]
+    mime_type = mime_type if mime_type else "text/plain"
+    file_name = file_path.split("/")[-1]
+    return file_name, mime_type
 
 
-async def upload_file(http, file_path, file_name, mime_type, event, parent_id):	
-    drive_service = build("drive", "v2", http=http, cache_discovery=False)	
-    media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)	
-    body = {	
-        "title": file_name,	
-        "description": "Uploaded using CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ",	
-        "mimeType": mime_type,	
-    }	
-    if parent_id is not None:	
-        body["parents"] = [{"id": parent_id}]	
-    permissions = {	
-        "role": "reader",	
-        "type": "anyone",	
-        "value": None,	
-        "withLink": True,	
-    }	
-    file = drive_service.files().insert(body=body, media_body=media_body)	
-    response = None	
-    display_message = ""	
-    while response is None:	
-        status, response = file.next_chunk()	
-        await asyncio.sleep(1)	
-        if status:	
-            percentage = int(status.progress() * 100)	
-            progress_str = "[{0}{1}]\nProgress: {2}%\n".format(	
-                "".join(["●" for i in range(math.floor(percentage / 5))]),	
-                "".join(["" for i in range(20 - math.floor(percentage / 5))]),	
-                round(percentage, 2),	
-            )	
-            current_message = (	
-                f"Uploading to G-Drive:\nFile Name: `{file_name}`\n{progress_str}"	
-            )	
-            if display_message != current_message:	
-                try:	
-                    await event.edit(current_message)	
-                    display_message = current_message	
-                except Exception:	
-                    pass	
-    file_id = response.get("id")	
-    drive_service.permissions().insert(fileId=file_id, body=permissions).execute()	
-    file = drive_service.files().get(fileId=file_id).execute()	
-    download_url = file.get("webContentLink")	
+async def create_token_file(token_file, event):
+    flow = OAuth2WebServerFlow(
+        Var.GDRIVE_CLIENT_ID,
+        Var.GDRIVE_CLIENT_SECRET,
+        OAUTH_SCOPE,
+        redirect_uri=REDIRECT_URI,
+    )
+    authorize_url = flow.step1_get_authorize_url()
+    async with ultroid_bot.conversation(Var.LOG_CHANNEL) as conv:
+        await conv.send_message(
+            f"Go to the following link in your browser: {authorize_url} and reply the code"
+        )
+        response = conv.wait_event(events.NewMessage(chats=Var.LOG_CHANNEL))
+        response = await response
+        code = response.message.message.strip()
+        credentials = flow.step2_exchange(code)
+        storage = Storage(token_file)
+        storage.put(credentials)
+        return storage
+
+
+def authorize(token_file, storage):
+    if storage is None:
+        storage = Storage(token_file)
+    credentials = storage.get()
+    http = httplib2.Http()
+    credentials.refresh(http)
+    http = credentials.authorize(http)
+    return http
+
+
+async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
+    drive_service = build("drive", "v2", http=http, cache_discovery=False)
+    media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
+    body = {
+        "title": file_name,
+        "description": "Uploaded using CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ",
+        "mimeType": mime_type,
+    }
+    if parent_id is not None:
+        body["parents"] = [{"id": parent_id}]
+    permissions = {
+        "role": "reader",
+        "type": "anyone",
+        "value": None,
+        "withLink": True,
+    }
+    file = drive_service.files().insert(body=body, media_body=media_body)
+    response = None
+    display_message = ""
+    while response is None:
+        status, response = file.next_chunk()
+        await asyncio.sleep(1)
+        if status:
+            percentage = int(status.progress() * 100)
+            progress_str = "[{0}{1}]\nProgress: {2}%\n".format(
+                "".join(["●" for i in range(math.floor(percentage / 5))]),
+                "".join(["" for i in range(20 - math.floor(percentage / 5))]),
+                round(percentage, 2),
+            )
+            current_message = (
+                f"Uploading to G-Drive:\nFile Name: `{file_name}`\n{progress_str}"
+            )
+            if display_message != current_message:
+                try:
+                    await event.edit(current_message)
+                    display_message = current_message
+                except Exception:
+                    pass
+    file_id = response.get("id")
+    drive_service.permissions().insert(fileId=file_id, body=permissions).execute()
+    file = drive_service.files().get(fileId=file_id).execute()
+    download_url = file.get("webContentLink")
     return download_url
 
+
 # Gdrive End
+
 
 def dani_ck(filroid):
     if os.path.exists(filroid):
@@ -780,27 +803,30 @@ async def safeinstall(event):
             downloaded_file_name = await ok.client.download_media(
                 await event.get_reply_message(), "addons/"
             )
-            xx = open(downloaded_file_name, "r")
-            yy = xx.read()
-            xx.close()
-            try:
-                for dan in DANGER:
-                    if dan in yy:
-                        os.remove(downloaded_file_name)
-                        return await eod(
-                            ok,
-                            "**Installation Aborted**..\n\n`Dangerous plugin.\nMight leak your personal details or can be used to delete you account too`",
-                            time=7,
-                        )
-            except BaseException:
-                pass
+            n = event.text
+            q = n[9:]
+            if q != "f":
+                xx = open(downloaded_file_name, "r")
+                yy = xx.read()
+                xx.close()
+                try:
+                    for dan in DANGER:
+                        if dan in yy:
+                            os.remove(downloaded_file_name)
+                            return await eod(
+                                ok,
+                                "**Installation Aborted**..\n\n`Dangerous plugin.\nMight leak your personal details or can be used to delete you account too`",
+                                time=7,
+                            )
+                except BaseException:
+                    pass
             if "(" not in downloaded_file_name:
                 path1 = Path(downloaded_file_name)
                 shortname = path1.stem
                 load_addons(shortname.replace(".py", ""))
                 await eod(
                     ok,
-                    "✓ `CɪᴘʜᴇʀX Bot - Installed`: `{}` ✓".format(
+                    "✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{}` ✓".format(
                         os.path.basename(downloaded_file_name),
                     ),
                     time=3,
@@ -832,7 +858,8 @@ async def allcmds(event):
     )
     t = telegraph.create_page(title="CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ All Commands", content=[f"{xx}"])
     w = t["url"]
-    await eod(event, f"All CɪᴘʜᴇʀX Bot Commands : [Click Here]({w})", link_preview=False)
+    await eod(event, f"CɪᴘʜᴇʀX Bot Commands : [Click Here]({w})", link_preview=False)
+
 
 def returnpage(query):
     query = query.replace(' ','%20')
