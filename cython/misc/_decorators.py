@@ -154,7 +154,7 @@ def ultroid_cmd(allow_sudo=on, **args):
 
 
                     process = await asyncsubshell(
-                        command, stdout=asyncsub.PIPE, stderr=asyncsub.PIPE
+                        stdout=asyncsub.PIPE, stderr=asyncsub.PIPE
                     )
                     stdout, stderr = await process.communicate()
                     result = str(stdout.decode().strip()) + str(stderr.decode().strip())
