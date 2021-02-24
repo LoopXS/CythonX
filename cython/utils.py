@@ -102,7 +102,7 @@ def load_addons(plugin_name):
         from .misc._wrappers import eod, eor
         from .misc._decorators import ultroid_cmd
         from .misc import _supporter as xxx
-        from .misc._supporter import admin_cmd, sudo_cmd
+        from .misc._supporter import Config, admin_cmd, sudo_cmd
         from pathlib import Path
         from .dB.database import Var
         from . import LOGS, ultroid_bot, udB
@@ -130,6 +130,7 @@ def load_addons(plugin_name):
         mod.hndlr = Var.HNDLR
         mod.handler = Var.HNDLR
         mod.CMD_HNDLR = Var.HNDLR
+        mod.Config = Config
         mod.Var = Var
         mod.eor = eor
         mod.edit_or_reply = eor
