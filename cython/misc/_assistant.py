@@ -95,7 +95,7 @@ def owner():
                 await function(event)
             else:
                 try:
-                    await event.answer(f"This is {OWNER_NAME} ᴇxᴄlusivᴇ ʙᴏᴛ")
+                    await event.answer(f"This is {OWNER_NAME}'s bot!!")
                 except BaseException:
                     pass
 
