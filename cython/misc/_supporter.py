@@ -132,7 +132,7 @@ async def eor(event, text):
 
 
 #   To Install Other UB plugins
-#   Ultroid Don't Need This Configs
+#   CɪᴘʜᴇʀX Bot Doesn't Need This Configs
 
 ENV = bool(os.environ.get("ENV", False))
 if ENV:
