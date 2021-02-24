@@ -10,4 +10,3 @@ echo "
 
 "
 python3 -m setup.py
-python3 -m cython
