@@ -153,14 +153,6 @@ def ultroid_cmd(allow_sudo=on, **args):
                     ftext += "\n\n--------END CɪᴘʜᴇʀX Bot CRASH LOG--------"
 
 
-                    process = await asyncsubshell(
-                        stdout=asyncsub.PIPE, stderr=asyncsub.PIPE
-                    )
-                    stdout, stderr = await process.communicate()
-                    result = str(stdout.decode().strip()) + str(stderr.decode().strip())
-
-                    ftext += result
-
                     file = open("cipherx-log.txt", "w+")
                     file.write(ftext)
                     file.close()
