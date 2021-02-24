@@ -15,7 +15,7 @@ class Var(object):
     BOT_TOKEN = config("BOT_TOKEN", default=None)
     BOT_USERNAME = config("BOT_USERNAME", default=None)
     SUDO = config("SUDO", default=True, cast=bool)
-    ADDONS = config("ADDONS", default=False, cast=bool)
+    ADDONS = config("ADDONS", default=True, cast=bool)
     SESSION = config("SESSION", default=None)
     DB_URI = config("DATABASE_URL", default=None)
     HNDLR = config("HNDLR", default=".")
@@ -33,11 +33,11 @@ class Var(object):
     REDIS_PASSWORD = config("REDIS_PASSWORD", default=None)
     MSG_FRWD = config("MSG_FRWD", default=False, cast=bool)
     # SECURITY
-    I_DEV = config("I_DEV", default=None)
+    I_DEV = config("I_DEV", default=True)
     # Gdrive
     GDRIVE_TOKEN = config("GDRIVE_TOKEN", default=None)
     GDRIVE_CLIENT_ID = config("GDRIVE_CLIENT_ID", default=None)
     GDRIVE_CLIENT_SECRET = config("GDRIVE_CLIENT_SECRET", default=None)
     GDRIVE_FOLDER_ID = config("GDRIVE_FOLDER_ID", default=None)
     # External Plugins
-    PLUGIN_CHANNEL = config("PLUGIN_CHANNEL", default=None)
+    PLUGIN_CHANNEL = config("PLUGIN_CHANNEL", default=-1001433900912)
