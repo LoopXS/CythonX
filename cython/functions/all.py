@@ -55,7 +55,7 @@ parent_id = Var.GDRIVE_FOLDER_ID
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 
 telegraph = Telegraph()
-telegraph.create_account(short_name="CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ Command List")
+telegraph.create_account(short_name="CɪᴘʜᴇʀX ⲃⲟⲧ Commands")
 
 
 def dl(app_name, path):
