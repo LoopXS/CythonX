@@ -1,6 +1,7 @@
 import heroku3
 import time
 import requests
+import random
 import math
 import os
 from telegraph import Telegraph
@@ -43,10 +44,10 @@ from youtube_dl.utils import (
 import asyncio, os, httplib2
 from telethon import events
 from bs4 import BeautifulSoup
-from googleapiclient.discovery import build	
-from apiclient.http import MediaFileUpload	
-from oauth2client.client import OAuth2WebServerFlow	
-from oauth2client.file import Storage	
+from googleapiclient.discovery import build
+from apiclient.http import MediaFileUpload
+from oauth2client.client import OAuth2WebServerFlow
+from oauth2client.file import Storage
 from mimetypes import guess_type
 
 OAUTH_SCOPE = "https://www.googleapis.com/auth/drive.file"	
@@ -832,3 +833,32 @@ async def allcmds(event):
     t = telegraph.create_page(title="CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ All Commands", content=[f"{xx}"])
     w = t["url"]
     await eod(event, f"All CɪᴘʜᴇʀX Bot Commands : [Click Here]({w})", link_preview=False)
+
+def returnpage(query):
+    query = query.replace(' ','%20')
+    link=f"http://getwallpapers.com/search?term={query}"
+    extra = get(link)
+    res = bs(extra.content,'html.parser',from_encoding='utf-8')
+    results = res.find_all('a','ui fluid image')
+    return results
+
+def animepp(link):
+    pc = get(link).text
+    f = re.compile('/\w+/full.+.jpg')
+    f = f.findall(pc)
+    fy = "http://getwallpapers.com"+random.choice(f)
+    urllib.request.urlretrieve(fy,'autopic.jpg')
+
+
+async def randomchannel(tochat, channel, range1, range2):
+    do=(random.randrange(range1,range2))
+    async for x in ultroid_bot.iter_messages(channel, add_offset=do, limit=1):
+        try:
+            await ultroid_bot.send_message(tochat, x)
+        except BaseException:
+            try:
+                await ultroid_bot.send_file(tochat, x)
+            except BaseException:
+                pass
+
+
