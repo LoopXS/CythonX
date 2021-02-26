@@ -213,7 +213,7 @@ if ENV:
         PM_DATA = os.environ.get("PM_DATA", "ENABLE")
         DEEP_AI = os.environ.get("DEEP_AI", None)
         TAG_LOG = os.environ.get("TAG_LOG", None)
-        ENABLE_HAREM = os.environ.get("ENABLE_HAREM", False)
+        ENABLE_HAREM = os.environ.get("ENABLE_HAREM", True)
 
 
 
