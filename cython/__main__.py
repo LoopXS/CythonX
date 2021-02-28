@@ -68,9 +68,9 @@ for name in files:
         try:
             load_plugins(plugin_name.replace(".py", ""))
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                LOGS.warning(f"CipherX - Official -  Installed - {plugin_name}")
+                LOGS.warning(f"CɪᴘʜᴇʀX - Official -  Installed - {plugin_name}")
         except Exception as e:
-            LOGS.warning(f"CipherX - Official - ERROR - {plugin_name}")
+            LOGS.warning(f"CɪᴘʜᴇʀX - Official - ERROR - {plugin_name}")
             LOGS.warning(str(e))
 
 
@@ -88,9 +88,9 @@ if Var.ADDONS:
             try:
                 load_addons(plugin_name.replace(".py", ""))
                 if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                    LOGS.warning(f"CipherX - Addons - Installed - {plugin_name}")
+                    LOGS.warning(f"CɪᴘʜᴇʀX - Addons - Installed - {plugin_name}")
             except Exception as e:
-                LOGS.warning(f"CipherX - Addons - ERROR - {plugin_name}")
+                LOGS.warning(f"CɪᴘʜᴇʀX - Addons - ERROR - {plugin_name}")
                 LOGS.warning(str(e))
 else:
 	os.system("cp plugins/__init__.py addons/")
@@ -106,9 +106,9 @@ for name in files:
         try:
             load_assistant(plugin_name.replace(".py", ""))
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                LOGS.warning(f"CipherX - Assistant - Installed - {plugin_name}")
+                LOGS.warning(f"CɪᴘʜᴇʀX - Assistant - Installed - {plugin_name}")
         except Exception as e:
-            LOGS.warning(f"CipherX - Assistant - ERROR - {plugin_name}")
+            LOGS.warning(f"CɪᴘʜᴇʀX - Assistant - ERROR - {plugin_name}")
             LOGS.warning(str(e))
 
 # for channel plugin
@@ -145,11 +145,11 @@ if Plug_channel:
                 try:
                     load_addons(name.replace(".py", ""))
                     LOGS.warning(
-                        f"CipherX - PLUGIN_CHANNEL - Installed - {(os.path.basename(file))}"
+                        f"CɪᴘʜᴇʀX - PLUGIN_CHANNEL - Installed - {(os.path.basename(file))}"
                     )
                 except Exception as e:
                     LOGS.warning(
-                        f"CipherX - PLUGIN_CHANNEL - ERROR - {(os.path.basename(file))}"
+                        f"CɪᴘʜᴇʀX - PLUGIN_CHANNEL - ERROR - {(os.path.basename(file))}"
                     )
                     LOGS.warning(str(e))
             else:
@@ -165,7 +165,7 @@ if Var.MSG_FRWD:
             patt = Path(a.name)
             plugin_name = patt.stem
             load_pmbot(plugin_name.replace(".py", ""))
-    LOGS.warning(f"CipherX - PM Bot Message Forwards - Enabled.")
+    LOGS.warning(f"CɪᴘʜᴇʀX - PM Bot Message Forwards - Enabled.")
 
 
 async def hehe():
@@ -173,14 +173,14 @@ async def hehe():
         try:
             await ultroid_bot.asst.send_message(
                 Var.LOG_CHANNEL,
-                f"**CipherX has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\nCɪᴘʜᴇʀX Exclusive\n➖➖➖➖➖➖➖➖➖",
+                f"**CɪᴘʜᴇʀX bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\nCɪᴘʜᴇʀX Exclusive\n➖➖➖➖➖➖➖➖➖",
             )
         except BaseException:
             pass
     else:
         await ultroid_bot.send_message(
             Var.LOG_CHANNEL,
-            f"**CipherX has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\nCɪᴘʜᴇʀX Exclusive\n➖➖➖➖➖➖➖➖➖",
+            f"**CɪᴘʜᴇʀX bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\nCɪᴘʜᴇʀX Exclusive\n➖➖➖➖➖➖➖➖➖",
         )
     try:
         await ultroid_bot(JoinChannelRequest("@FutureTechnologyGuard"))
@@ -192,7 +192,7 @@ async def hehe():
 ultroid_bot.loop.run_until_complete(hehe())
 if Var.PLUGIN_CHANNEL:
     ultroid_bot.loop.run_until_complete(plug())
-LOGS.warning("CipherX Bot has been deployed. CipherX Exclusive")
+LOGS.warning("CɪᴘʜᴇʀX Bot has been deployed. CɪᴘʜᴇʀX Exclusive")
 
 if __name__ == "__main__":
     ultroid_bot.run_until_disconnected()
