@@ -37,9 +37,9 @@ async def bot_info(BOT_TOKEN):
 
 
 ultroid_bot.asst = None
-LOGS.warning("Initialising...")
+LOGS.warning("Initializing...")
 if Var.BOT_TOKEN is not None:
-    LOGS.warning("Starting Ultroid...")
+    LOGS.warning("Starting CɪᴘʜᴇʀX Bot...")
     try:
         ultroid_bot.asst = TelegramClient(
             None, api_id=Var.API_ID, api_hash=Var.API_HASH
