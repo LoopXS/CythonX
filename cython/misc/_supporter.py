@@ -144,6 +144,7 @@ if ENV:
     class Config(object):
         LOGGER = True
         LOCATION = os.environ.get("LOCATION", None)
+        CLEAN_GROUPS = os.environ.get("CLEAN_GROUPS", False)
         OPEN_WEATHER_MAP_APPID = os.environ.get("OPEN_WEATHER_MAP_APPID", None)
         SCREEN_SHOT_LAYER_ACCESS_KEY = os.environ.get(
             "SCREEN_SHOT_LAYER_ACCESS_KEY", None
