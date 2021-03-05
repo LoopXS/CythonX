@@ -10,7 +10,6 @@ DANGER = [
     "base64",
     "base32",
     "get_me",
-    ".me",
     "NewMessage",
     "addons/",
     "cryptography",
