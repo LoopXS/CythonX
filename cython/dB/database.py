@@ -5,8 +5,6 @@ from . import *
 
 load_dotenv(find_dotenv())
 
-ENV = config("ENV", default=False, cast=bool)
-
 
 class Var(object):
     # Mandatory
@@ -14,13 +12,16 @@ class Var(object):
     API_HASH = config("API_HASH", default=None)
     BOT_TOKEN = config("BOT_TOKEN", default=None)
     BOT_USERNAME = config("BOT_USERNAME", default=None)
-    SUDO = config("SUDO", default=True, cast=bool)
-    ADDONS = config("ADDONS", default=True, cast=bool)
     SESSION = config("SESSION", default=None)
     DB_URI = config("DATABASE_URL", default=None)
-    HNDLR = config("HNDLR", default=".")
     LOG_CHANNEL = config("LOG_CHANNEL", default=None, cast=int)
     BLACKLIST_CHAT = set(int(x) for x in config("BLACKLIST_CHAT", "").split())
+    # bot mode
+    BOT_MODE = config("BOT_MODE", default=False, cast=bool)
+    try:
+        OWNER_ID = config("OWNER_ID", default=None, cast=int)
+    except BaseException:
+        pass
     # heroku stuff
     try:
         HEROKU_APP_NAME = config("HEROKU_APP_NAME", default=None)
@@ -31,13 +32,3 @@ class Var(object):
     # REDIS
     REDIS_URI = config("REDIS_URI", default=None)
     REDIS_PASSWORD = config("REDIS_PASSWORD", default=None)
-    MSG_FRWD = config("MSG_FRWD", default=False, cast=bool)
-    # SECURITY
-    I_DEV = config("I_DEV", default=True)
-    # Gdrive
-    GDRIVE_TOKEN = config("GDRIVE_TOKEN", default=None)
-    GDRIVE_CLIENT_ID = config("GDRIVE_CLIENT_ID", default=None)
-    GDRIVE_CLIENT_SECRET = config("GDRIVE_CLIENT_SECRET", default=None)
-    GDRIVE_FOLDER_ID = config("GDRIVE_FOLDER_ID", default=None)
-    # External Plugins
-    PLUGIN_CHANNEL = config("PLUGIN_CHANNEL", default=-1001433900912)
