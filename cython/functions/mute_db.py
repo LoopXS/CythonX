@@ -48,5 +48,4 @@ def unmute(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("MUTE", list_to_str(pmperm))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/pmpermit_db/disapprove_user : {e}")
         return False
