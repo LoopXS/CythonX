@@ -1,5 +1,7 @@
 from telethon.tl.types import ChatBannedRights
 import os
+import logging
+from logging import DEBUG, INFO, basicConfig, getLogger
 from .. import *
 from ..utils import *
 from cython.misc._decorators import *
