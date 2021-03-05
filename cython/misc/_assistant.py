@@ -4,6 +4,7 @@ from .. import *
 from ..utils import *
 from plugins import *
 from telethon.tl.types import InputWebDocument
+from telethon.utils import get_display_name
 
 OWNER_NAME = ultroid_bot.me.first_name
 OWNER_ID = ultroid_bot.me.id
