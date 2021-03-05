@@ -137,7 +137,7 @@ def ultroid_cmd(allow_sudo=on, **args):
                 sleep(fwerr.seconds + 10)
                 await ultroid_bot.asst.send_message(
                     Var.LOG_CHANNEL,
-                    "`Bot is working again`",
+                    "`CɪᴘʜᴇʀX Bot is working again`",
                 )
             except events.StopPropagation:
                 raise events.StopPropagation
