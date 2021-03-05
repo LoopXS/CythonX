@@ -1,10 +1,9 @@
 from telethon.tl.types import ChatBannedRights
 import os
-import logging
-from logging import DEBUG, INFO, basicConfig, getLogger
 from .. import *
 from ..utils import *
 from cython.misc._decorators import *
+from cython.misc._wrappers import *
 import re
 import inspect
 import functools
@@ -16,11 +15,10 @@ from ..dB.core import *
 from pathlib import Path
 from sys import *
 
-sedprint = logging.getLogger("WARNING")
 
 CMD_HELP = {}
 
-ALIVE_NAME = OWNER_NAME
+ALIVE_NAME = ultroid_bot.me.first_name
 BOTLOG = Var.LOG_CHANNEL
 BOTLOG_CHATID = Var.LOG_CHANNEL
 
@@ -41,7 +39,7 @@ if SUDO_USERS:
 else:
     sudos = ""
 
-hndlr = "\\" + Var.HNDLR if Var.HNDLR is not None else "."
+hndlr = "\\" + udB.get("HNDLR") if udB.get("HNDLR") is not None else "."
 
 
 def admin_cmd(pattern=None, command=None, **args):
@@ -125,17 +123,11 @@ def sudo():
     return decorator
 
 
-async def eor(event, text):
-    if is_sudo(event.sender_id):
-        reply_to = await event.get_reply_message()
-        if reply_to:
-            return await reply_to.reply(text)
-        return await event.reply(text)
-    return await event.edit(text)
-
+edit_or_reply = eor
+edit_delete = eod
 
 #   To Install Other UB plugins
-#   CɪᴘʜᴇʀX Bot Doesn't Need This Configs
+#   CɪᴘʜᴇʀX Bot Don't Need This Configs
 
 ENV = bool(os.environ.get("ENV", False))
 if ENV:
@@ -144,7 +136,6 @@ if ENV:
     class Config(object):
         LOGGER = True
         LOCATION = os.environ.get("LOCATION", None)
-        CLEAN_GROUPS = os.environ.get("CLEAN_GROUPS", False)
         OPEN_WEATHER_MAP_APPID = os.environ.get("OPEN_WEATHER_MAP_APPID", None)
         SCREEN_SHOT_LAYER_ACCESS_KEY = os.environ.get(
             "SCREEN_SHOT_LAYER_ACCESS_KEY", None
@@ -154,7 +145,7 @@ if ENV:
             "TMP_DOWNLOAD_DIRECTORY", "resources/downloads/"
         )
         TEMP_DOWNLOAD_DIRECTORY = TMP_DOWNLOAD_DIRECTORY
-        TELEGRAPH_SHORT_NAME = os.environ.get("TELEGRAPH_SHORT_NAME", "Ultroid")
+        TELEGRAPH_SHORT_NAME = os.environ.get("TELEGRAPH_SHORT_NAME", "CɪᴘʜᴇʀX")
         OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", None)
         G_BAN_LOGGER_GROUP = Var.LOG_CHANNEL
         GOOGLE_SEARCH_COUNT_LIMIT = int(os.environ.get("GOOGLE_SEARCH_COUNT_LIMIT", 9))
@@ -214,8 +205,6 @@ if ENV:
         PM_DATA = os.environ.get("PM_DATA", "ENABLE")
         DEEP_AI = os.environ.get("DEEP_AI", None)
         TAG_LOG = os.environ.get("TAG_LOG", None)
-        ENABLE_HAREM = os.environ.get("ENABLE_HAREM", True)
-
 
 
 else:
@@ -224,5 +213,4 @@ else:
         DB_URI = None
 
 
-CMD_HNDLR = Var.HNDLR
-Var = Config
+CMD_HNDLR = HNDLR
