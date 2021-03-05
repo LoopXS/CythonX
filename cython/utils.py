@@ -31,7 +31,7 @@ def load_plugins(plugin_name):
         from .misc import _supporter as xxx
         from pathlib import Path
         from .dB.database import Var
-        from . import LOGS, ultroid_bot, udB
+        from . import LOGS, ultroid_bot, udB, HNDLR
 
         path = Path(f"plugins/{plugin_name}.py")
         name = "plugins.{}".format(plugin_name)
@@ -49,7 +49,7 @@ def load_plugins(plugin_name):
         mod.eod = eod
         mod.edit_delete = eod
         mod.LOGS = LOGS
-        mod.hndlr = Var.HNDLR
+        mod.hndlr = HNDLR
         mod.Var = Var
         mod.eor = eor
         mod.edit_or_reply = eor
@@ -105,7 +105,7 @@ def load_addons(plugin_name):
         from .misc._supporter import Config, admin_cmd, sudo_cmd
         from pathlib import Path
         from .dB.database import Var
-        from . import LOGS, ultroid_bot, udB
+        from . import LOGS, ultroid_bot, udB, HNDLR
 
         path = Path(f"addons/{plugin_name}.py")
         name = "addons.{}".format(plugin_name)
@@ -127,9 +127,9 @@ def load_addons(plugin_name):
         mod.edit_delete = eod
         mod.LOGS = LOGS
         mod.in_pattern = in_pattern
-        mod.hndlr = Var.HNDLR
-        mod.handler = Var.HNDLR
-        mod.CMD_HNDLR = Var.HNDLR
+        mod.hndlr = HNDLR
+        mod.handler = HNDLR
+        mod.CMD_HNDLR = HNDLR
         mod.Config = Config
         mod.Var = Var
         mod.eor = eor
@@ -190,7 +190,7 @@ def load_assistant(plugin_name):
         from .misc._wrappers import eod, eor
         from pathlib import Path
         from .dB.database import Var
-        from . import ultroid_bot
+        from . import ultroid_bot, HNDLR
 
         path = Path(f"assistant/{plugin_name}.py")
         name = "assistant.{}".format(plugin_name)
@@ -205,7 +205,7 @@ def load_assistant(plugin_name):
         mod.eod = eod
         mod.eor = eor
         mod.callback = callback
-        mod.hndlr = Var.HNDLR
+        mod.hndlr = HNDLR
         mod.asst_cmd = asst_cmd
         spec.loader.exec_module(mod)
         sys.modules["assistant." + plugin_name] = mod
@@ -233,7 +233,7 @@ def load_pmbot(plugin_name):
         from .misc._wrappers import eod, eor
         from pathlib import Path
         from .dB.database import Var
-        from . import ultroid_bot
+        from . import ultroid_bot, HNDLR
 
         path = Path(f"assistant/pmbot/{plugin_name}.py")
         name = "assistant.pmbot.{}".format(plugin_name)
@@ -246,7 +246,7 @@ def load_pmbot(plugin_name):
         mod.eod = eod
         mod.eor = eor
         mod.callback = callback
-        mod.hndlr = Var.HNDLR
+        mod.hndlr = HNDLR
         mod.asst_cmd = asst_cmd
         spec.loader.exec_module(mod)
         sys.modules["assistant.pmbot" + plugin_name] = mod
