@@ -1,9 +1,13 @@
 import heroku3
+import asyncio
 import time
 import requests
 import random
 import math
 import os
+import urllib
+import re
+from bs4 import BeautifulSoup as bs
 from telegraph import Telegraph
 from pathlib import Path
 from ..dB.database import Var
@@ -19,6 +23,7 @@ from telethon.errors import (
     ChannelPrivateError,
     ChannelPublicGroupNaError,
 )
+from telethon import events
 from telethon.tl.functions.channels import GetFullChannelRequest, GetParticipantsRequest
 from telethon.tl.functions.messages import GetFullChatRequest, GetHistoryRequest
 from telethon.tl.types import (
@@ -31,6 +36,7 @@ from telethon.tl.functions.users import GetFullUserRequest
 from telethon.utils import get_input_location
 from PIL import Image
 from ..misc._wrappers import *
+from ..misc._supporter import *
 from youtube_dl.utils import (
     DownloadError,
     ContentTooShortError,
@@ -43,7 +49,6 @@ from youtube_dl.utils import (
 )
 import asyncio, os, httplib2
 from telethon import events
-from bs4 import BeautifulSoup
 from googleapiclient.discovery import build
 from apiclient.http import MediaFileUpload
 from oauth2client.client import OAuth2WebServerFlow
@@ -52,38 +57,43 @@ from mimetypes import guess_type
 
 OAUTH_SCOPE = "https://www.googleapis.com/auth/drive.file"
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
-parent_id = Var.GDRIVE_FOLDER_ID
+parent_id = udB.get("GDRIVE_FOLDER_ID")
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 
 telegraph = Telegraph()
 telegraph.create_account(short_name="CɪᴘʜᴇʀX Bot Commands")
 
+
 async def ban_time(event, time_str):
-	if any(time_str.endswith(unit) for unit in ('m', 'h', 'd')):
-		unit = time_str[-1]
-		time_int = time_str[:-1]
-		if not time_int.isdigit():
-			return await event.edit("Invalid time amount specified.")
-		if unit == 'm':
-			bantime = int(time.time() + int(time_int) * 60)
-		elif unit == 'h':
-			bantime = int(time.time() + int(time_int) * 60 * 60)
-		elif unit == 'd':
-			bantime = int(time.time() + int(time_int) * 24 * 60 * 60)
-		else:
-			return ""
-		return bantime
-	else:
-		return await event.edit("Invalid time type specified. Expected m,h, or d, got: {}".format(time_int[-1]))
+    if any(time_str.endswith(unit) for unit in ("m", "h", "d")):
+        unit = time_str[-1]
+        time_int = time_str[:-1]
+        if not time_int.isdigit():
+            return await event.edit("Invalid time amount specified.")
+        if unit == "m":
+            bantime = int(time.time() + int(time_int) * 60)
+        elif unit == "h":
+            bantime = int(time.time() + int(time_int) * 60 * 60)
+        elif unit == "d":
+            bantime = int(time.time() + int(time_int) * 24 * 60 * 60)
+        else:
+            return ""
+        return bantime
+    else:
+        return await event.edit(
+            "Invalid time type specified. Expected m,h, or d, got: {}".format(
+                time_int[-1]
+            )
+        )
 
 
 def dl(app_name, path):
     res = requests.get(f"https://m.apkpure.com/search?q={app_name}")
-    soup = BeautifulSoup(res.text, "html.parser")
+    soup = bs(res.text, "html.parser")
     result = soup.select(".dd")
     for link in result[:1]:
         s_for_name = requests.get("https://m.apkpure.com" + link.get("href"))
-        sfn = BeautifulSoup(s_for_name.text, "html.parser")
+        sfn = bs(s_for_name.text, "html.parser")
         ttl = sfn.select_one("title").text
         noneed = [" - APK Download"]
         for i in noneed:
@@ -91,7 +101,7 @@ def dl(app_name, path):
             res2 = requests.get(
                 "https://m.apkpure.com" + link.get("href") + "/download?from=details"
             )
-            soup2 = BeautifulSoup(res2.text, "html.parser")
+            soup2 = bs(res2.text, "html.parser")
             result = soup2.select(".ga")
         for link in result:
             dl_link = link.get("href")
@@ -107,7 +117,7 @@ def dl(app_name, path):
 async def gsearch(http, query, filename):
     drive_service = build("drive", "v2", http=http)
     page_token = None
-    msg = "**CɪᴘʜᴇʀX G-Drive Search Query**\n`" + filename + "`\n**Results**\n"
+    msg = "**CɪᴘʜᴇʀX G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
     while True:
         response = (
             drive_service.files()
@@ -122,14 +132,14 @@ async def gsearch(http, query, filename):
         for file in response.get("items", []):
             if file.get("mimeType") == "application/vnd.google-apps.folder":
                 msg += (
-                    "⁍ [{}](https://drive.google.com/drive/folders/{}) (folder)".format(
+                    "[{}](https://drive.google.com/drive/folders/{}) (folder)".format(
                         file.get("title"), file.get("id")
                     )
                     + "\n"
                 )
             else:
                 msg += (
-                    "⁍ [{}](https://drive.google.com/uc?id={}&export=download)".format(
+                    "[{}](https://drive.google.com/uc?id={}&export=download)".format(
                         file.get("title"), file.get("id")
                     )
                     + "\n"
@@ -142,8 +152,16 @@ async def gsearch(http, query, filename):
 
 async def create_directory(http, directory_name, parent_id):
     drive_service = build("drive", "v2", http=http, cache_discovery=False)
-    permissions = {"role": "reader", "type": "anyone", "value": None, "withLink": True}
-    file_metadata = {"title": directory_name, "mimeType": G_DRIVE_DIR_MIME_TYPE}
+    permissions = {
+        "role": "reader",
+        "type": "anyone",
+        "value": None,
+        "withLink": True,
+    }
+    file_metadata = {
+        "title": directory_name,
+        "mimeType": G_DRIVE_DIR_MIME_TYPE,
+    }
     if parent_id is not None:
         file_metadata["parents"] = [{"id": parent_id}]
     file = drive_service.files().insert(body=file_metadata).execute()
@@ -180,17 +198,18 @@ def file_ops(file_path):
 
 async def create_token_file(token_file, event):
     flow = OAuth2WebServerFlow(
-        Var.GDRIVE_CLIENT_ID,
-        Var.GDRIVE_CLIENT_SECRET,
+        udB.get("GDRIVE_CLIENT_ID"),
+        udB.get("GDRIVE_CLIENT_SECRET"),
         OAUTH_SCOPE,
         redirect_uri=REDIRECT_URI,
     )
     authorize_url = flow.step1_get_authorize_url()
-    async with ultroid_bot.conversation(Var.LOG_CHANNEL) as conv:
-        await conv.send_message(
-            f"Go to the following link in your browser: {authorize_url} and reply the code"
+    async with asst.conversation(ultroid_bot.uid) as conv:
+        await asst.send_message(
+            ultroid_bot.uid,
+            f"Go to the following link in your browser: {authorize_url} and reply the code",
         )
-        response = conv.wait_event(events.NewMessage(chats=Var.LOG_CHANNEL))
+        response = conv.wait_event(events.NewMessage(from_users=ultroid_bot.uid))
         response = await response
         code = response.message.message.strip()
         credentials = flow.step2_exchange(code)
@@ -214,7 +233,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
     media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
     body = {
         "title": file_name,
-        "description": "Uploaded using CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ",
+        "description": "Uploaded using CɪᴘʜᴇʀX bot",
         "mimeType": mime_type,
     }
     if parent_id is not None:
@@ -225,21 +244,32 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
         "value": None,
         "withLink": True,
     }
+    file_size = os.path.getsize(file_path)
     file = drive_service.files().insert(body=body, media_body=media_body)
+    times = time.time()
     response = None
     display_message = ""
     while response is None:
-        status, response = file.next_chunk()
-        await asyncio.sleep(1)
+        status, response = file.next_chunk(num_retries=5)
         if status:
-            percentage = int(status.progress() * 100)
-            progress_str = "[{0}{1}]\nProgress: {2}%\n".format(
+            t_size = status.total_size
+            diff = time.time() - times
+            uploaded = status.resumable_progress
+            percentage = uploaded / t_size * 100
+            speed = round(uploaded / diff, 2)
+            eta = round((t_size - uploaded) / speed)
+            progress_str = "`{0}{1} {2}%`".format(
                 "".join(["●" for i in range(math.floor(percentage / 5))]),
                 "".join(["" for i in range(20 - math.floor(percentage / 5))]),
                 round(percentage, 2),
             )
             current_message = (
-                f"Uploading to G-Drive:\nFile Name: `{file_name}`\n{progress_str}"
+                f"`✦ Uploading to G-Drive`\n\n"
+                + f"`✦ File Name:` `{file_name}`\n\n"
+                + f"{progress_str}\n\n"
+                + f"`✦ Uploaded:` `{humanbytes(uploaded)} of {humanbytes(t_size)}`\n"
+                + f"`✦ Speed:` `{humanbytes(speed)}`\n"
+                + f"`✦ ETA:` `{time_formatter(eta)}`"
             )
             if display_message != current_message:
                 try:
@@ -292,7 +322,7 @@ def un_plug(shortname):
 
 async def dler(sed):
     try:
-        await sed.edit("`Fetching data, please wait..`")
+        await sed.edit("`Fetching data, please wait...`")
     except DownloadError as DE:
         await sed.edit(f"`{str(DE)}`")
     except ContentTooShortError:
@@ -389,7 +419,7 @@ async def restart(ult):
         app = Heroku.apps()[Var.HEROKU_APP_NAME]
         app.restart()
     else:
-        await eor(ult, "`No HEROKU_API_KEY found.\nShutting down. Manually start me.`")
+        await eor(ult, "`No HEROKU_API_KEY found.\nShutting down CɪᴘʜᴇʀX bot. Manually start me.`")
         await ult.client.disconnect()
         os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -572,7 +602,7 @@ async def get_chatinfo(event):
             await ok.edit("`Invalid channel/group`")
             return None
         except ChannelPrivateError:
-            await ok.edit("`This is a private channel/group or I am banned from there`")
+            await ok.edit("`This is a private channel/group or I'm banned from there`")
             return None
         except ChannelPublicGroupNaError:
             await ok.edit("`Channel or supergroup doesn't exist`")
@@ -797,8 +827,8 @@ async def fetch_info(chat, event):
 
 
 async def safeinstall(event):
-    ok = await eor(event, "`Installing...`")
     if event.reply_to_msg_id:
+        ok = await eor(event, "`Installing...`")
         try:
             downloaded_file_name = await ok.client.download_media(
                 await event.get_reply_message(), "addons/"
@@ -813,10 +843,8 @@ async def safeinstall(event):
                     for dan in DANGER:
                         if dan in yy:
                             os.remove(downloaded_file_name)
-                            return await eod(
-                                ok,
-                                "**Installation Aborted**..\n\n`Dangerous plugin.\nMight leak your personal details or can be used to delete you account too`",
-                                time=7,
+                            return await ok.edit(
+                                f"**Installation Aborted**..\n coz ~ `{dan}` in {downloaded_file_name}\n\n`Dangerous plugin.\nMight leak your personal details or can be used to delete you account too`\nIf u still want to install use `{HNDLR}install f`",
                             )
                 except BaseException:
                     pass
@@ -824,25 +852,53 @@ async def safeinstall(event):
                 path1 = Path(downloaded_file_name)
                 shortname = path1.stem
                 load_addons(shortname.replace(".py", ""))
-                await eod(
-                    ok,
-                    "✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{}` ✓".format(
-                        os.path.basename(downloaded_file_name),
-                    ),
-                    time=3,
-                )
+                try:
+                    plug = shortname.replace(".py", "")
+                    if plug in HELP:
+                        output = "**Plugin** - `{}`\n".format(plug)
+                        for i in HELP[plug]:
+                            output += i
+                        output += "\n© CɪᴘʜᴇʀX"
+                        await ok.edit(
+                            f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{output}"
+                        )
+                        await asyncio.sleep(9)
+                        await ok.delete()
+                    elif plug in CMD_HELP:
+                        kk = f"Plugin Name-{plug}\n\n✘ Commands Available-\n\n"
+                        kk += str(CMD_HELP[plug])
+                        await ok.edit(f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{kk}")
+                        await asyncio.sleep(9)
+                        await ok.delete()
+                    else:
+                        try:
+                            x = f"Plugin Name-{plug}\n\n✘ Commands Available-\n\n"
+                            for d in LIST[plug]:
+                                x += HNDLR + d
+                                x += "\n"
+                            await ok.edit(f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{x}")
+                            await asyncio.sleep(5)
+                            await ok.delete()
+                        except BaseException:
+                            await ok.edit(f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓")
+                            await asyncio.sleep(3)
+                            await ok.delete()
+                except BaseException:
+                    pass
             else:
                 os.remove(downloaded_file_name)
-                await eod(
-                    ok, "**ERROR**\nPlugin might have been pre-installed.", time=3
-                )
+                await ok.edit("**ERROR**\nPlugin might have been pre-installed.")
+                await asyncio.sleep(4)
+                await ok.delete()
         except Exception as e:
-            await eod(ok, "**ERROR\n**" + str(e), time=4)
+            await ok.edit("**ERROR\n**" + str(e))
             os.remove(downloaded_file_name)
+            await asyncio.sleep(4)
+            await ok.delete()
     else:
-        await eod(
-            ok, f"Please use `{Var.HNDLR}install` as reply to a .py file.", time=3
-        )
+        ok = await eor(event, f"Please use `{HNDLR}install` as reply to a .py file.")
+        await asyncio.sleep(4)
+        await ok.delete()
 
 
 async def allcmds(event):
@@ -862,23 +918,24 @@ async def allcmds(event):
 
 
 def returnpage(query):
-    query = query.replace(' ','%20')
-    link=f"http://getwallpapers.com/search?term={query}"
-    extra = get(link)
-    res = bs(extra.content,'html.parser',from_encoding='utf-8')
-    results = res.find_all('a','ui fluid image')
+    query = query.replace(" ", "%20")
+    link = f"http://getwallpapers.com/search?term={query}"
+    extra = requests.get(link)
+    res = bs(extra.content, "html.parser", from_encoding="utf-8")
+    results = res.find_all("a", "ui fluid image")
     return results
 
+
 def animepp(link):
-    pc = get(link).text
-    f = re.compile('/\w+/full.+.jpg')
+    pc = requests.get(link).text
+    f = re.compile("/\w+/full.+.jpg")
     f = f.findall(pc)
-    fy = "http://getwallpapers.com"+random.choice(f)
-    urllib.request.urlretrieve(fy,'autopic.jpg')
+    fy = "http://getwallpapers.com" + random.choice(f)
+    urllib.request.urlretrieve(fy, "autopic.jpg")
 
 
 async def randomchannel(tochat, channel, range1, range2):
-    do=(random.randrange(range1,range2))
+    do = random.randrange(range1, range2)
     async for x in ultroid_bot.iter_messages(channel, add_offset=do, limit=1):
         try:
             await ultroid_bot.send_message(tochat, x)
@@ -887,5 +944,3 @@ async def randomchannel(tochat, channel, range1, range2):
                 await ultroid_bot.send_file(tochat, x)
             except BaseException:
                 pass
-
-
