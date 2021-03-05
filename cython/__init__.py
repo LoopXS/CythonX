@@ -1,3 +1,10 @@
+# Ultroid - UserBot
+# Copyright (C) 2020 TeamUltroid
+#
+# This file is a part of < https://github.com/TeamUltroid/Ultroid/ >
+# PLease read the GNU Affero General Public License in
+# <https://www.github.com/TeamUltroid/Ultroid/blob/main/LICENSE/>.
+
 import os, redis
 from telethon.sessions import StringSession
 from telethon import TelegramClient
@@ -11,9 +18,11 @@ from .functions import *
 from decouple import config
 from datetime import datetime
 
+LOGS = getLogger(__name__)
+
 if not Var.API_ID or not Var.API_HASH:
-	wr("        No API_ID or API_HASH found. CɪᴘʜᴇʀX Bot Quiting...")
-	exit(1)
+    wr("No API_ID or API_HASH found. CɪᴘʜᴇʀX Bot Quiting...")
+    exit(1)
 
 
 if Var.SESSION:
@@ -22,28 +31,13 @@ if Var.SESSION:
             StringSession(Var.SESSION), Var.API_ID, Var.API_HASH
         )
     except Exception as ap:
-        wr(f"        ERROR - {ap}")
+        wr(f"ERROR - {ap}")
         exit(1)
 else:
-    wr("        No string Session found, CɪᴘʜᴇʀX Bot Quiting Now !!")
+    wr("No string Session found, CɪᴘʜᴇʀX Bot Quiting Now !!")
     exit(1)
 
-ENV = config("ENV", default=True, cast=bool)
 START_TIME = datetime.now()
-
-if bool(ENV):
-    CONSOLE_LOGGER_VERBOSE = sb(os.environ.get("CONSOLE_LOGGER_VERBOSE", "False"))
-    if CONSOLE_LOGGER_VERBOSE:
-        wr("        Verbose is on.")
-        basicConfig(
-            format="✘ %(asctime)s ✘ - ⫸ %(name)s ⫷ - ⛝ %(levelname)s ⛝ - ║ %(message)s ║",
-            level=INFO,
-        )
-    else:
-        pass
-    LOGS = getLogger(__name__)
-else:
-    PLACEHOLDER = None
 
 try:
     redis_info = Var.REDIS_URI.split(":")
@@ -55,6 +49,14 @@ try:
         decode_responses=True,
     )
 except BaseException:
-    wr("        REDIS_URI or REDIS_PASSWORD is wrong! Recheck!")
-    wr("        CɪᴘʜᴇʀX Bot has shutdown!")
+    wr("REDIS_URI or REDIS_PASSWORD is wrong! Recheck!")
+    wr("CɪᴘʜᴇʀX Bot has shutdown!")
     exit(1)
+
+try:
+    if udB.get("HNDLR"):
+        HNDLR = udB.get("HNDLR")
+    else:
+        HNDLR = "."
+except BaseException:
+    pass
