@@ -5,16 +5,18 @@ import inspect
 import sys
 import asyncio
 from telethon import *
-from plugins import *
 from ..dB.database import Var
 from ..dB.core import *
 from pathlib import Path
 from traceback import format_exc
-from time import gmtime, strftime
+from time import gmtime, strftime, sleep
 from asyncio import create_subprocess_shell as asyncsubshell, subprocess as asyncsub
 from os import remove
 from sys import *
+from telethon.errors.rpcerrorlist import FloodWaitError
 
+
+# sudo
 ok = udB.get("SUDOS")
 if ok:
     SUDO_USERS = set(int(x) for x in ok.split())
@@ -26,42 +28,18 @@ if SUDO_USERS:
 else:
     sudos = ""
 
-hndlr = "\\" + Var.HNDLR if Var.HNDLR is not None else "."
+on = udB.get("SUDO") if udB.get("SUDO") is not None else "True"
+
+if on == "True":
+    sed = [ultroid_bot.uid, *sudos]
+else:
+    sed = [ultroid_bot.uid]
+
+hndlr = "\\" + udB.get("HNDLR") if udB.get("HNDLR") is not None else "."
+
 
 # decorator
 
-def register(**args):
-    """ Register a new event. """
-    args["func"] = lambda e: e.via_bot_id is None
-
-    stack = inspect.stack()
-    previous_stack_frame = stack[1]
-    file_test = Path(previous_stack_frame.filename)
-    file_test = file_test.stem.replace(".py", "")
-    pattern = args.get("pattern", None)
-    disable_edited = args.get("disable_edited", True)
-
-    if pattern is not None and not pattern.startswith("(?i)"):
-        args["pattern"] = "(?i)" + pattern
-
-    if "disable_edited" in args:
-        del args["disable_edited"]
-
-    reg = re.compile("(.*)")
-    if not pattern == None:
-        try:
-            cmd = re.search(reg, pattern)
-            try:
-                cmd = cmd.group(1).replace("$", "").replace("\\", "").replace("^", "")
-            except:
-                pass
-
-            try:
-                LIST[file_test].append(cmd)
-            except:
-                LIST.update({file_test: [cmd]})
-        except:
-            pass
 
 def ultroid_cmd(allow_sudo=on, **args):
     args["func"] = lambda e: e.via_bot_id is None
@@ -151,6 +129,16 @@ def ultroid_cmd(allow_sudo=on, **args):
                 return
             try:
                 await func(ult)
+            except FloodWaitError as fwerr:
+                await ultroid_bot.asst.send_message(
+                    Var.LOG_CHANNEL,
+                    f"`FloodWaitError:\n{str(fwerr)}\n\nSleeping for {fwerr.seconds + 10} seconds`",
+                )
+                sleep(fwerr.seconds + 10)
+                await ultroid_bot.asst.send_message(
+                    Var.LOG_CHANNEL,
+                    "`Bot is working again`",
+                )
             except events.StopPropagation:
                 raise events.StopPropagation
             except KeyboardInterrupt:
