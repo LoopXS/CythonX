@@ -20,7 +20,7 @@ from sys import *
 
 CMD_HELP = {}
 
-ALIVE_NAME = ultroid_bot.me.first_name
+ALIVE_NAME = OWNER_NAME
 BOTLOG = Var.LOG_CHANNEL
 BOTLOG_CHATID = Var.LOG_CHANNEL
 
@@ -138,6 +138,7 @@ if ENV:
     class Config(object):
         LOGGER = True
         LOCATION = os.environ.get("LOCATION", None)
+        CLEAN_GROUPS = os.environ.get("CLEAN_GROUPS", False)
         OPEN_WEATHER_MAP_APPID = os.environ.get("OPEN_WEATHER_MAP_APPID", None)
         SCREEN_SHOT_LAYER_ACCESS_KEY = os.environ.get(
             "SCREEN_SHOT_LAYER_ACCESS_KEY", None
