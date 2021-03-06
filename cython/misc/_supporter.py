@@ -20,7 +20,7 @@ from sys import *
 
 CMD_HELP = {}
 
-ALIVE_NAME = OWNER_NAME
+ALIVE_NAME = ultroid_bot.me.first_name
 BOTLOG = Var.LOG_CHANNEL
 BOTLOG_CHATID = Var.LOG_CHANNEL
 
