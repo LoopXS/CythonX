@@ -1,7 +1,5 @@
 from telethon.tl.types import ChatBannedRights
 import os
-import logging
-from logging import DEBUG, INFO, basicConfig, getLogger
 from .. import *
 from ..utils import *
 from cython.misc._decorators import *
@@ -41,7 +39,7 @@ if SUDO_USERS:
 else:
     sudos = ""
 
-hndlr = "\\" + udB.get("HNDLR") if udB.get("HNDLR") is not None else "."
+hndlr = "\\" + HNDLR
 
 
 def admin_cmd(pattern=None, command=None, **args):
@@ -129,7 +127,7 @@ edit_or_reply = eor
 edit_delete = eod
 
 #   To Install Other UB plugins
-#   CɪᴘʜᴇʀX Bot Don't Need This Configs
+#   Ultroid Don't Need This Configs
 
 ENV = bool(os.environ.get("ENV", False))
 if ENV:
@@ -138,7 +136,6 @@ if ENV:
     class Config(object):
         LOGGER = True
         LOCATION = os.environ.get("LOCATION", None)
-        CLEAN_GROUPS = os.environ.get("CLEAN_GROUPS", False)
         OPEN_WEATHER_MAP_APPID = os.environ.get("OPEN_WEATHER_MAP_APPID", None)
         SCREEN_SHOT_LAYER_ACCESS_KEY = os.environ.get(
             "SCREEN_SHOT_LAYER_ACCESS_KEY", None
