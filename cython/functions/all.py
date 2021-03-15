@@ -251,7 +251,7 @@ def dl(app_name, path):
 async def gsearch(http, query, filename):
     drive_service = build("drive", "v2", http=http)
     page_token = None
-    msg = "**G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
+    msg = "**CɪᴘʜᴇʀX G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
     while True:
         response = (
             drive_service.files()
@@ -738,7 +738,7 @@ async def get_chatinfo(event):
             await ok.edit("`Invalid channel/group`")
             return None
         except ChannelPrivateError:
-            await ok.edit("`This is a private channel/group or I am banned from there`")
+            await ok.edit("`This is a private channel/group or I'm banned from there`")
             return None
         except ChannelPublicGroupNaError:
             await ok.edit("`Channel or supergroup doesn't exist`")
