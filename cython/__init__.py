@@ -57,6 +57,7 @@ try:
     if udB.get("HNDLR"):
         HNDLR = udB.get("HNDLR")
     else:
-        HNDLR = "."
+        udB.set("HNDLR", ".")
+        HNDLR = udB.get("HNDLR")
 except BaseException:
     pass
