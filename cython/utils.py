@@ -50,6 +50,7 @@ def load_plugins(plugin_name):
         mod.edit_delete = eod
         mod.LOGS = LOGS
         mod.hndlr = HNDLR
+        mod.HNDLR = HNDLR
         mod.Var = Var
         mod.eor = eor
         mod.edit_or_reply = eor
@@ -129,6 +130,7 @@ def load_addons(plugin_name):
         mod.in_pattern = in_pattern
         mod.hndlr = HNDLR
         mod.handler = HNDLR
+        mod.HNDLR = HNDLR
         mod.CMD_HNDLR = HNDLR
         mod.Config = Config
         mod.Var = Var
@@ -206,6 +208,7 @@ def load_assistant(plugin_name):
         mod.eor = eor
         mod.callback = callback
         mod.hndlr = HNDLR
+        mod.HNDLR = HNDLR
         mod.asst_cmd = asst_cmd
         spec.loader.exec_module(mod)
         sys.modules["assistant." + plugin_name] = mod
@@ -247,6 +250,7 @@ def load_pmbot(plugin_name):
         mod.eor = eor
         mod.callback = callback
         mod.hndlr = HNDLR
+        mod.HNDLR = HNDLR
         mod.asst_cmd = asst_cmd
         spec.loader.exec_module(mod)
         sys.modules["assistant.pmbot" + plugin_name] = mod
