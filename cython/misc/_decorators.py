@@ -14,6 +14,7 @@ from asyncio import create_subprocess_shell as asyncsubshell, subprocess as asyn
 from os import remove
 from sys import *
 from telethon.errors.rpcerrorlist import FloodWaitError
+from ._wrappers import *
 
 
 # sudo
@@ -35,7 +36,7 @@ if on == "True":
 else:
     sed = [ultroid_bot.uid]
 
-hndlr = "\\" + udB.get("HNDLR") if udB.get("HNDLR") is not None else "."
+hndlr = "\\" + HNDLR
 
 
 # decorator
@@ -113,9 +114,6 @@ def ultroid_cmd(allow_sudo=on, **args):
 
     def decorator(func):
         async def wrapper(ult):
-            if Var.LOG_CHANNEL:
-                Var.LOG_CHANNEL
-            ult.sender_id
             if not trigger_on_fwd and ult.fwd_from:
                 return
             if ult.via_bot_id and not trigger_on_inline:
@@ -123,10 +121,7 @@ def ultroid_cmd(allow_sudo=on, **args):
             if disable_errors:
                 return
             if groups_only and not ult.is_group:
-                xx = await eor(ult, "`I don't think this is a group.`")
-                await asyncio.sleep(5)
-                await xx.delete()
-                return
+                return await eod(ult, "`I don't think this is a group.`", time=3)
             try:
                 await func(ult)
             except FloodWaitError as fwerr:
