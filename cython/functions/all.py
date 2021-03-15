@@ -64,6 +64,140 @@ telegraph = Telegraph()
 telegraph.create_account(short_name="CɪᴘʜᴇʀX Bot Commands")
 
 
+CMD_WEB = {
+    "anonfiles": 'curl -F "file=@{}" https://api.anonfiles.com/upload',
+    "transfer": 'curl --upload-file "{}" https://transfer.sh/',
+    "bayfiles": 'curl -F "file=@{}" https://api.bayfiles.com/upload',
+    "x0": 'curl -F "file=@{}" https://x0.at/',
+    "file.io": 'curl -F "file=@{}" https://file.io',
+    "siasky": 'curl -X POST "https://siasky.net/skynet/skyfile" -F "file=@{}"',
+}
+
+
+async def dloader(e, host, file):
+    selected = CMD_WEB[host].format(file)
+    process = await asyncio.create_subprocess_shell(
+        selected, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    )
+    stdout, stderr = await process.communicate()
+    os.remove(file)
+    return await e.edit(f"`{stdout.decode()}`")
+
+
+def unlucks(unluck):
+    if unluck == "msgs":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_messages=False,
+            invite_users=False,
+            pin_messages=False,
+            change_info=False,
+        )
+    if unluck == "media":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_media=False,
+        )
+    if unluck == "sticker":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_stickers=False,
+        )
+    if unluck == "gif":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_gifs=False,
+        )
+    if unluck == "games":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_games=False,
+        )
+    if unluck == "inlines":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_inline=False,
+        )
+    if unluck == "polls":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_polls=False,
+        )
+    if unluck == "invites":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            invite_users=False,
+        )
+    if unluck == "pin":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            pin_messages=False,
+        )
+    if unluck == "changeinfo":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            change_info=False,
+        )
+    return rights
+
+
+def lucks(luck):
+    if luck == "msgs":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_messages=True,
+            invite_users=True,
+            pin_messages=True,
+            change_info=True,
+        )
+    if luck == "media":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_media=True,
+        )
+    if luck == "sticker":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_stickers=True,
+        )
+    if luck == "gif":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_gifs=True,
+        )
+    if luck == "games":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_games=True,
+        )
+    if luck == "inlines":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_inline=True,
+        )
+    if luck == "polls":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            send_polls=True,
+        )
+    if luck == "invites":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            invite_users=True,
+        )
+    if luck == "pin":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            pin_messages=True,
+        )
+    if luck == "changeinfo":
+        rights = types.ChatBannedRights(
+            until_date=None,
+            change_info=True,
+        )
+    return rights
+
+
 async def ban_time(event, time_str):
     if any(time_str.endswith(unit) for unit in ("m", "h", "d")):
         unit = time_str[-1]
@@ -117,7 +251,7 @@ def dl(app_name, path):
 async def gsearch(http, query, filename):
     drive_service = build("drive", "v2", http=http)
     page_token = None
-    msg = "**CɪᴘʜᴇʀX G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
+    msg = "**G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
     while True:
         response = (
             drive_service.files()
@@ -204,10 +338,10 @@ async def create_token_file(token_file, event):
         redirect_uri=REDIRECT_URI,
     )
     authorize_url = flow.step1_get_authorize_url()
-    async with asst.conversation(ultroid_bot.uid) as conv:
-        await asst.send_message(
-            ultroid_bot.uid,
-            f"Go to the following link in your browser: {authorize_url} and reply the code",
+    async with ultroid_bot.asst.conversation(ultroid_bot.uid) as conv:
+        await event.edit(
+            f"Go to the following link in your browser: [Authorization Link]({authorize_url}) and reply the code",
+            link_preview=False,
         )
         response = conv.wait_event(events.NewMessage(from_users=ultroid_bot.uid))
         response = await response
@@ -269,7 +403,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
                 + f"{progress_str}\n\n"
                 + f"`✦ Uploaded:` `{humanbytes(uploaded)} of {humanbytes(t_size)}`\n"
                 + f"`✦ Speed:` `{humanbytes(speed)}`\n"
-                + f"`✦ ETA:` `{time_formatter(eta)}`"
+                + f"`✦ ETA:` `{time_formatter(eta*1000)}`"
             )
             if display_message != current_message:
                 try:
@@ -305,6 +439,7 @@ def un_plug(shortname):
             for i in LOADED[shortname]:
                 ultroid_bot.remove_event_handler(i)
             del LOADED[shortname]
+            del LIST[shortname]
             ADDONS.remove(shortname)
 
         except BaseException:
@@ -315,6 +450,7 @@ def un_plug(shortname):
                 if cb.__module__ == name:
                     del ultroid_bot._event_builders[i]
                     del LOADED[shortname]
+                    del LIST[shortname]
                     ADDONS.remove(shortname)
     except BaseException:
         raise ValueError
@@ -322,7 +458,7 @@ def un_plug(shortname):
 
 async def dler(sed):
     try:
-        await sed.edit("`Fetching data, please wait...`")
+        await sed.edit("`Fetching data, please wait..`")
     except DownloadError as DE:
         await sed.edit(f"`{str(DE)}`")
     except ContentTooShortError:
@@ -602,7 +738,7 @@ async def get_chatinfo(event):
             await ok.edit("`Invalid channel/group`")
             return None
         except ChannelPrivateError:
-            await ok.edit("`This is a private channel/group or I'm banned from there`")
+            await ok.edit("`This is a private channel/group or I am banned from there`")
             return None
         except ChannelPublicGroupNaError:
             await ok.edit("`Channel or supergroup doesn't exist`")
@@ -626,9 +762,9 @@ async def fetch_info(chat, event):
             GetHistoryRequest(
                 peer=chat_obj_info.id,
                 offset_id=0,
-                offset_date=datetime(2010, 1, 1),
-                add_offset=-1,
-                limit=1,
+                offset_date=None,
+                add_offset=-0,
+                limit=0,
                 max_id=0,
                 min_id=0,
                 hash=0,
