@@ -12,7 +12,7 @@ ULTROID_PIC = "https://telegra.ph/file/167a0b85048b04129bd3b.jpg"
 MSG = f"""
 **CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ**
 ➖➖➖➖➖➖➖➖➖➖
-**Owner**: [{OWNER_NAME}](tg://user?id={OWNER_NAME})
+**Owner**: [{get_display_name(ultroid_bot.me)}](tg://user?id={ultroid_bot.me.id})
 **✨ CɪᴘʜᴇʀX is the best ✨**
 ➖➖➖➖➖➖➖➖➖➖
 """
@@ -25,7 +25,10 @@ def inline_owner():
         @functools.wraps(function)
         async def wrapper(event):
             if event.sender_id in sed:
-                await function(event)
+                try:
+                    await function(event)
+                except BaseException:
+                    pass
             else:
                 try:
                     builder = event.builder
