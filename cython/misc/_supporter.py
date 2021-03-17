@@ -14,7 +14,10 @@ from ..dB.database import Var
 from ..dB.core import *
 from pathlib import Path
 from sys import *
+import logging
+from logging import DEBUG, INFO, basicConfig, getLogger
 
+sedprint = logging.getLogger("CɪᴘʜᴇʀX")
 
 CMD_HELP = {}
 
