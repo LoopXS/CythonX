@@ -32,3 +32,6 @@ class Var(object):
     # REDIS
     REDIS_URI = config("REDIS_URI", default=None)
     REDIS_PASSWORD = config("REDIS_PASSWORD", default=None)
+    # PMLOG
+    PMLOG = config("PMLOG", default=True, cast=bool)
+
