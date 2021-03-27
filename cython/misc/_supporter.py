@@ -206,7 +206,6 @@ if ENV:
         LYDIA_API = os.environ.get("LYDIA_API", None)
         PLUGIN_CHANNEL = int(os.environ.get("PLUGIN_CHANNEL", -69))
         PM_DATA = os.environ.get("PM_DATA", "ENABLE")
-        PMLOG = os.environ.get("PMLOG", "True")
         DEEP_AI = os.environ.get("DEEP_AI", None)
         TAG_LOG = os.environ.get("TAG_LOG", None)
 
