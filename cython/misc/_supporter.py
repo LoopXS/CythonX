@@ -14,12 +14,13 @@ from ..dB.database import Var
 from ..dB.core import *
 from pathlib import Path
 from sys import *
+
 import logging
 from logging import DEBUG, INFO, basicConfig, getLogger
 
-sedprint = logging.getLogger("CɪᴘʜᴇʀX")
+from . import CMD_HELP
 
-CMD_HELP = {}
+sedprint = logging.getLogger("CɪᴘʜᴇʀX")
 
 ALIVE_NAME = ultroid_bot.me.first_name
 BOTLOG = Var.LOG_CHANNEL
