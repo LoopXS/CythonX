@@ -40,7 +40,7 @@ def approve_user(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("PMPERMIT", list_to_str(pmperm))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/pmpermit_db/approve_user : {e}")
+        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/pmpermit_db/approve_user : {e}")
         return False
 
 
@@ -54,5 +54,5 @@ def disapprove_user(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("PMPERMIT", list_to_str(pmperm))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/pmpermit_db/disapprove_user : {e}")
+        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/pmpermit_db/disapprove_user : {e}")
         return False
