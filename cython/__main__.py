@@ -12,8 +12,19 @@ from telethon.tl.functions.channels import JoinChannelRequest
 from telethon.tl.functions.channels import LeaveChannelRequest
 from telethon.tl.types import InputMessagesFilterDocument
 
+# logging.basicConfig(filename="cipherx.log", filemode="w",
+#    format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s", level=logging.INFO
+# )
+
+# remove the old logs file.
+if os.path.exists("cipherx.log"):
+    os.remove("cipherx.log")
+
+# start logging into a new file.
 logging.basicConfig(
-    format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s", level=logging.INFO
+    format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s",
+    level=logging.INFO,
+    handlers=[logging.FileHandler("cipherx.log"), logging.StreamHandler()],
 )
 
 if not os.path.isdir("resources/auths"):
@@ -25,15 +36,16 @@ if not os.path.isdir("resources/downloads"):
 if not os.path.isdir("addons"):
     os.mkdir("addons")
 
-yt_token = udB.get("YT_TOKEN")
-if yt_token:
-    with open("resources/auths/yt_token.txt", "w") as f_file:
-        f_file.write(yt_token)
-
 token = udB.get("GDRIVE_TOKEN")
 if token:
     with open("resources/auths/auth_token.txt", "w") as t_file:
         t_file.write(token)
+
+websocket = udB.get("WEBSOCKET_URL")
+if websocket:
+    ulr = f"WEBSOCKET_URL={websocket}"
+    with open(".env", "w") as t:
+        t.write(ulr)
 
 
 async def istart(ult):
@@ -48,29 +60,38 @@ async def bot_info(BOT_TOKEN):
     asstinfo.username
 
 
+LOGS.info(
+    """
+                -----------------------------------
+                        Starting Deployment        
+                -----------------------------------
+"""
+)
+
 ultroid_bot.asst = None
-LOGS.warning("Initializing...")
+LOGS.info("Initializing...")
 if Var.BOT_TOKEN is not None:
-    LOGS.warning("Starting CɪᴘʜᴇʀX Bot...")
+    LOGS.info("Starting CɪᴘʜᴇʀX Bot...")
     try:
         ultroid_bot.asst = TelegramClient(
             None, api_id=Var.API_ID, api_hash=Var.API_HASH
         ).start(bot_token=Var.BOT_TOKEN)
         ultroid_bot.loop.run_until_complete(istart(Var.BOT_USERNAME))
-        LOGS.warning("User Mode - Done")
-        LOGS.warning("Done, startup completed")
+        LOGS.info("User Mode - Done")
+        LOGS.info("Done, startup completed")
     except AuthKeyDuplicatedError:
-        LOGS.warning(
+        LOGS.info(
             "Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping..."
         )
         exit(1)
     except BaseException as e:
-        LOGS.warning("Error: " + str(e))
+        LOGS.info("Error: " + str(e))
         exit(1)
 else:
-    LOGS.warning("Starting User Mode...")
+    LOGS.info("Starting User Mode...")
     ultroid_bot.start()
 
+udB.set("OWNER_ID", ultroid_bot.uid)
 
 # for userbot
 path = "plugins/*.py"
@@ -82,17 +103,17 @@ for name in files:
         try:
             load_plugins(plugin_name.replace(".py", ""))
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                LOGS.warning(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
+                LOGS.info(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
         except Exception as e:
-            LOGS.warning(f"CɪᴘʜᴇʀX Bot - Official - ERROR - {plugin_name}")
-            LOGS.warning(str(e))
+            LOGS.info(f"CɪᴘʜᴇʀX Bot - Official - ERROR - {plugin_name}")
+            LOGS.info(str(e))
 
 
 # for addons
 addons = udB.get("ADDONS")
 if addons == "True" or addons == None:
     os.system("git clone https://github.com/CipherX1-ops/Megatron-addons.git ./addons/")
-    LOGS.warning("Installing packages for addons")
+    LOGS.info("Installing packages for addons")
     os.system("pip install -r ./addons/addons.txt")
     path = "addons/*.py"
     files = glob.glob(path)
@@ -103,7 +124,7 @@ if addons == "True" or addons == None:
             try:
                 load_addons(plugin_name.replace(".py", ""))
                 if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                    LOGS.warning(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
+                    LOGS.info(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
             except Exception as e:
                 LOGS.warning(f"CɪᴘʜᴇʀX Bot - Addons - ERROR - {plugin_name}")
                 LOGS.warning(str(e))
@@ -121,7 +142,7 @@ for name in files:
         try:
             load_assistant(plugin_name.replace(".py", ""))
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                LOGS.warning(f"CɪᴘʜᴇʀX Bot - Assistant - Installed - {plugin_name}")
+                LOGS.info(f"CɪᴘʜᴇʀX Bot - Assistant - Installed - {plugin_name}")
         except Exception as e:
             LOGS.warning(f"CɪᴘʜᴇʀX Bot - Assistant - ERROR - {plugin_name}")
             LOGS.warning(str(e))
@@ -160,7 +181,7 @@ if Plug_channel:
                     name = upath.stem
                     try:
                         load_addons(name.replace(".py", ""))
-                        LOGS.warning(
+                        LOGS.info(
                             f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - Installed - {(os.path.basename(file))}"
                         )
                     except Exception as e:
@@ -169,14 +190,15 @@ if Plug_channel:
                         )
                         LOGS.warning(str(e))
                 else:
-                    LOGS.warning(f"Plugin {(os.path.basename(file))} is Pre Installed")
+                    LOGS.info(f"Plugin {(os.path.basename(file))} is Pre Installed")
+                    os.remove(file)
         except Exception as e:
             LOGS.warning(str(e))
 
 
-# msg forwarder
-msg_fwd = udB.get("MSG_FRWD")
-if msg_fwd:
+# chat via assistant
+pmbot = udB.get("PMBOT")
+if pmbot == "True":
     path = "assistant/pmbot/*.py"
     files = glob.glob(path)
     for name in files:
@@ -184,14 +206,14 @@ if msg_fwd:
             patt = Path(a.name)
             plugin_name = patt.stem
             load_pmbot(plugin_name.replace(".py", ""))
-    LOGS.warning(f"CɪᴘʜᴇʀX Bot - PM Bot Message Forwards - Enabled.")
+    LOGS.info(f"CɪᴘʜᴇʀX Bot - PM Bot Message Forwards - Enabled.")
 
 
 async def semxy():
     try:
         xx = await ultroid_bot.get_entity(Var.BOT_USERNAME)
         if xx.photo == None:
-            LOGS.warning("Customising Ur Assistant Bot in @BOTFATHER")
+            LOGS.info("Customizing your Assistant Bot in @BOTFATHER")
             RD = Var.BOT_USERNAME
             if RD.startswith("@"):
                 UL = RD
@@ -201,7 +223,9 @@ async def semxy():
                 sir = ultroid_bot.me.first_name
             else:
                 sir = f"@{ultroid_bot.me.username}"
-            await ultroid_bot.send_message("botfather", "Auto Customisation Started")
+            await ultroid_bot.send_message(
+                Var.LOG_CHANNEL, "Auto Customization Started on @botfather"
+            )
             await asyncio.sleep(1)
             await ultroid_bot.send_message("botfather", "/cancel")
             await asyncio.sleep(1)
@@ -229,13 +253,15 @@ async def semxy():
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
                 "botfather",
-                f"✨PowerFull CɪᴘʜᴇʀX Assistant Bot✨\n✨Master ~ {sir} ✨\n\n✨Powered By ~ CɪᴘʜᴇʀX✨",
+                f"✨PowerFull CɪᴘʜᴇʀX Assistant Bot✨\n✨Master ~ {sir} ✨\n\n✨Powered By ~ CɪᴘʜᴇʀX ✨",
             )
             await asyncio.sleep(2)
             await ultroid_bot.send_message("botfather", "/start")
             await asyncio.sleep(1)
-            await ultroid_bot.send_message("botfather", "Auto Customisation Done")
-            LOGS.warning("Customisation Done")
+            await ultroid_bot.send_message(
+                Var.LOG_CHANNEL, "**Auto Customization** Done at @BotFather"
+            )
+            LOGS.info("Customization Done")
     except Exception as e:
         LOGS.warning(str(e))
 
@@ -250,13 +276,13 @@ async def hehe():
                 UL = f"@{RD}"
             await ultroid_bot.asst.send_message(
                 Var.LOG_CHANNEL,
-                f"**CɪᴘʜᴇʀX bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: {UL}\n➖➖➖➖➖➖➖➖➖\nCɪᴘʜᴇʀX Exclusive\n➖➖➖➖➖➖➖➖➖",
+                f"**CɪᴘʜᴇʀX Bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: {UL}\n➖➖➖➖➖➖➖➖➖\n**Support**: CɪᴘʜᴇʀX Bot\n➖➖➖➖➖➖➖➖➖",
             )
         except BaseException:
             try:
                 await ultroid_bot.send_message(
                     Var.LOG_CHANNEL,
-                    f"**CɪᴘʜᴇʀX bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: {UL}\n➖➖➖➖➖➖➖➖➖\nCɪᴘʜᴇʀX Exclusive\n➖➖➖➖➖➖➖➖➖",
+                    f"**CɪᴘʜᴇʀX Bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: {UL}\n➖➖➖➖➖➖➖➖➖\n***Support**: CɪᴘʜᴇʀX Bot\n➖➖➖➖➖➖➖➖➖",
                 )
             except BaseException:
                 pass
@@ -272,7 +298,13 @@ if Plug_channel:
 
 ultroid_bot.loop.run_until_complete(hehe())
 
-LOGS.warning("CɪᴘʜᴇʀX Bot has been deployed.")
+LOGS.info(
+    """
+                -----------------------------------------
+                    CɪᴘʜᴇʀX Bot has been deployed! 
+                -----------------------------------------
+"""
+)
 
 if __name__ == "__main__":
     ultroid_bot.run_until_disconnected()
