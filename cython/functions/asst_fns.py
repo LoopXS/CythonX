@@ -32,7 +32,7 @@ def add_user(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("BOT_USERS", list_to_str(users))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/pmbot/add_user : {e}")
+        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/pmbot/add_user : {e}")
         return False
 
 
@@ -46,7 +46,7 @@ def del_user(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("BOT_USERS", list_to_str(users))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/pmbot/del_user : {e}")
+        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/pmbot/del_user : {e}")
         return False
 
 
@@ -78,7 +78,7 @@ def blacklist_user(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("BOT_BLS", list_to_str(users))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/pmbot/blacklist_user : {e}")
+        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/pmbot/blacklist_user : {e}")
         return False
 
 
@@ -92,7 +92,7 @@ def rem_blacklist(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("BOT_BLS", list_to_str(users))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/pmbot/rem_blacklist : {e}")
+        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/pmbot/rem_blacklist : {e}")
         return False
 
 
