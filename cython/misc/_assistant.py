@@ -2,7 +2,7 @@ import functools
 from telethon import events
 from .. import *
 from ..utils import *
-from plugins import *
+from ._decorators import sed
 from telethon.tl.types import InputWebDocument
 from telethon.utils import get_display_name
 
