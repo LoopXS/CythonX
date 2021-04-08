@@ -49,7 +49,7 @@ def add_sudo(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("SUDOS", list_to_str(sudos))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/sudos/add_sudo : {e}")
+        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/sudos/add_sudo : {e}")
         return False
 
 
@@ -63,5 +63,5 @@ def del_sudo(id):  # Take int or str with numbers only , Returns Boolean
         udB.set("SUDOS", list_to_str(sudos))
         return True
     except Exception as e:
-        print(f"CɪᴘʜᴇʀX Bot LOG : // functions/sudos/del_sudo : {e}")
+        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/sudos/del_sudo : {e}")
         return False
