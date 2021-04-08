@@ -4,16 +4,22 @@ import re
 import inspect
 import sys
 import asyncio
+import requests
 from telethon import *
 from ..dB.database import Var
 from ..dB.core import *
+from ..functions.all import time_formatter as tf
 from pathlib import Path
 from traceback import format_exc
 from time import gmtime, strftime, sleep
 from asyncio import create_subprocess_shell as asyncsubshell, subprocess as asyncsub
 from os import remove
 from sys import *
-from telethon.errors.rpcerrorlist import FloodWaitError
+from telethon.errors.rpcerrorlist import (
+    FloodWaitError,
+    MessageIdInvalidError,
+    MessageNotModifiedError,
+)
 from ._wrappers import *
 
 
@@ -29,7 +35,7 @@ if SUDO_USERS:
 else:
     sudos = ""
 
-on = udB.get("SUDO") if udB.get("SUDO") is not None else "True"
+on = udB.get("SUDO") if udB.get("SUDO") is not None else "False"
 
 if on == "True":
     sed = [ultroid_bot.uid, *sudos]
@@ -50,17 +56,16 @@ def ultroid_cmd(allow_sudo=on, **args):
     file_test = file_test.stem.replace(".py", "")
     pattern = args.get("pattern", None)
     groups_only = args.get("groups_only", False)
-    disable_edited = args.get("disable_edited", True)
+    admins_only = args.get("admins_only", False)
     disable_errors = args.get("disable_errors", False)
     trigger_on_fwd = args.get("trigger_on_fwd", False)
-    trigger_on_inline = args.get("trigger_on_inline", False)
     args["outgoing"] = True
 
-    if allow_sudo:
+    if allow_sudo == "True":
         args["from_users"] = sed
         args["incoming"] = True
 
-    elif "incoming" in args and not args["incoming"]:
+    else:
         args["outgoing"] = True
 
     if pattern is not None:
@@ -100,10 +105,8 @@ def ultroid_cmd(allow_sudo=on, **args):
     if "allow_edited_updates" in args and args["allow_edited_updates"]:
         args["allow_edited_updates"]
         del args["allow_edited_updates"]
-    if "trigger_on_inline" in args:
-        del args["trigger_on_inline"]
-    if "disable_edited" in args:
-        del args["disable_edited"]
+    if "admins_only" in args:
+        del args["admins_only"]
     if "groups_only" in args:
         del args["groups_only"]
     if "disable_errors" in args:
@@ -114,20 +117,25 @@ def ultroid_cmd(allow_sudo=on, **args):
 
     def decorator(func):
         async def wrapper(ult):
+            chat = await ult.get_chat()
             if not trigger_on_fwd and ult.fwd_from:
-                return
-            if ult.via_bot_id and not trigger_on_inline:
                 return
             if disable_errors:
                 return
-            if groups_only and not ult.is_group:
-                return await eod(ult, "`I don't think this is a group.`", time=3)
+            if groups_only and ult.is_private:
+                return await eod(ult, "`Use this in group/channel.`", time=3)
+            if admins_only and not chat.admin_rights:
+                return await eod(ult, "`I'm not an admin.`", time=3)
             try:
                 await func(ult)
+            except MessageIdInvalidError:
+                pass
+            except MessageNotModifiedError:
+                pass
             except FloodWaitError as fwerr:
                 await ultroid_bot.asst.send_message(
                     Var.LOG_CHANNEL,
-                    f"`FloodWaitError:\n{str(fwerr)}\n\nSleeping for {fwerr.seconds + 10} seconds`",
+                    f"`FloodWaitError:\n{str(fwerr)}\n\nSleeping for {tf((fwerr.seconds + 10)*1000)}`",
                 )
                 sleep(fwerr.seconds + 10)
                 await ultroid_bot.asst.send_message(
@@ -143,11 +151,9 @@ def ultroid_cmd(allow_sudo=on, **args):
                 if not disable_errors:
                     date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-                    text = "**CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ - Error Report!!**\n"
-                    link = "https://t.me/Hackintush"
-                    text += "If you want you can report it"
-                    text += f"- just forward this message [here]({link}).\n"
-                    text += "I won't log anything except the fact of error and date\n"
+                    text = """
+**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Error Report**
+"""
 
                     ftext = "\nDisclaimer:\nThis file uploaded ONLY here, "
                     ftext += "we logged only fact of error and date, "
@@ -155,7 +161,7 @@ def ultroid_cmd(allow_sudo=on, **args):
                     ftext += "you may not report this error if you've "
                     ftext += "any confidential data here, no one will see your data "
                     ftext += "if you choose not to do so.\n\n"
-                    ftext += "--------START CɪᴘʜᴇʀX Bot CRASH LOG--------"
+                    ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
                     ftext += "\nDate: " + date
                     ftext += "\nGroup ID: " + str(ult.chat_id)
                     ftext += "\nSender ID: " + str(ult.sender_id)
@@ -165,25 +171,32 @@ def ultroid_cmd(allow_sudo=on, **args):
                     ftext += str(format_exc())
                     ftext += "\n\nError text:\n"
                     ftext += str(sys.exc_info()[1])
-                    ftext += "\n\n--------END CɪᴘʜᴇʀX Bot CRASH LOG--------"
+                    ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
 
-
-                    file = open("cipherx-log.txt", "w+")
+                    file = open("cipherx.txt", "w+")
                     file.write(ftext)
                     file.close()
+                    key = (
+                        requests.post(
+                            "https://nekobin.com/api/documents", json={"content": ftext}
+                        )
+                        .json()
+                        .get("result")
+                        .get("key")
+                    )
+                    url = f"https://nekobin.com/{key}"
+                    text += f"\nPasted [here]({url}) too."
                     if Var.LOG_CHANNEL:
                         Placetosend = Var.LOG_CHANNEL
                     else:
                         Placetosend = ultroid_bot.uid
                     await ultroid_bot.asst.send_file(
                         Placetosend,
-                        "cipherx-log.txt",
+                        "ultroid-log.txt",
                         caption=text,
                     )
-                    remove("cipherx-log.txt")
+                    remove("cipherx.txt")
 
-        if not disable_edited:
-            ultroid_bot.add_event_handler(wrapper, events.MessageEdited(**args))
         ultroid_bot.add_event_handler(wrapper, events.NewMessage(**args))
         try:
             LOADED[file_test].append(wrapper)
