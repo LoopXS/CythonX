@@ -1,12 +1,3 @@
-import heroku3
-import asyncio
-import time
-import requests
-import random
-import math
-import os
-import urllib
-import re
 from bs4 import BeautifulSoup as bs
 from telegraph import Telegraph
 from pathlib import Path
@@ -36,7 +27,7 @@ from telethon.tl.functions.users import GetFullUserRequest
 from telethon.utils import get_input_location
 from PIL import Image
 from ..misc._wrappers import *
-from ..misc._supporter import *
+from ..misc import *
 from youtube_dl.utils import (
     DownloadError,
     ContentTooShortError,
@@ -47,7 +38,8 @@ from youtube_dl.utils import (
     UnavailableVideoError,
     XAttrMetadataError,
 )
-import asyncio, os, httplib2
+from youtube_dl import YoutubeDL
+import asyncio, os, httplib2, heroku3, time, requests, random, math, io, urllib, re
 from telethon import events
 from googleapiclient.discovery import build
 from apiclient.http import MediaFileUpload
@@ -72,6 +64,14 @@ CMD_WEB = {
     "file.io": 'curl -F "file=@{}" https://file.io',
     "siasky": 'curl -X POST "https://siasky.net/skynet/skyfile" -F "file=@{}"',
 }
+
+
+async def get_user_id(ids):
+    if str(ids).isdigit():
+        userid = int(ids)
+    else:
+        userid = (await ultroid_bot.get_entity(ids)).id
+    return userid
 
 
 async def dloader(e, host, file):
@@ -221,37 +221,28 @@ async def ban_time(event, time_str):
         )
 
 
-def dl(app_name, path):
-    res = requests.get(f"https://m.apkpure.com/search?q={app_name}")
-    soup = bs(res.text, "html.parser")
-    result = soup.select(".dd")
-    for link in result[:1]:
-        s_for_name = requests.get("https://m.apkpure.com" + link.get("href"))
-        sfn = bs(s_for_name.text, "html.parser")
-        ttl = sfn.select_one("title").text
-        noneed = [" - APK Download"]
-        for i in noneed:
-            name = ttl.replace(i, "")
-            res2 = requests.get(
-                "https://m.apkpure.com" + link.get("href") + "/download?from=details"
-            )
-            soup2 = bs(res2.text, "html.parser")
-            result = soup2.select(".ga")
-        for link in result:
-            dl_link = link.get("href")
-            r = requests.get(dl_link)
-            with open(f"{path}/{name}.apk", "wb") as f:
-                f.write(r.content)
-                return f"{path}/{name}.apk"
-
-
 # gdrive
+
+
+def list_files(http):
+    drive = build("drive", "v2", http=http, cache_discovery=False)
+    x = drive.files().get(fileId="").execute()
+    files = {}
+    for m in x["items"]:
+        try:
+            files.update({f"{m['title']}": f"{m['webContentLink']}"})
+        except KeyError:
+            pass
+    lists = f"**Total files found in Gdrive:** `{len(files.keys())}`\n\n"
+    for l in files:
+        lists += f"• [{l}]({files[l]})\n"
+    return lists
 
 
 async def gsearch(http, query, filename):
     drive_service = build("drive", "v2", http=http)
     page_token = None
-    msg = "**CɪᴘʜᴇʀX G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
+    msg = "**CɪᴘʜᴇʀX Bot G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
     while True:
         response = (
             drive_service.files()
@@ -367,7 +358,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
     media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
     body = {
         "title": file_name,
-        "description": "Uploaded using CɪᴘʜᴇʀX bot",
+        "description": "Uploaded using Ultroid Userbot",
         "mimeType": mime_type,
     }
     if parent_id is not None:
@@ -398,7 +389,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
                 round(percentage, 2),
             )
             current_message = (
-                f"`✦ Uploading to G-Drive`\n\n"
+                f"`✦ Uploading to G-Drive by CɪᴘʜᴇʀX Bot`\n\n"
                 + f"`✦ File Name:` `{file_name}`\n\n"
                 + f"{progress_str}\n\n"
                 + f"`✦ Uploaded:` `{humanbytes(uploaded)} of {humanbytes(t_size)}`\n"
@@ -438,9 +429,12 @@ def un_plug(shortname):
         try:
             for i in LOADED[shortname]:
                 ultroid_bot.remove_event_handler(i)
-            del LOADED[shortname]
-            del LIST[shortname]
-            ADDONS.remove(shortname)
+            try:
+                del LOADED[shortname]
+                del LIST[shortname]
+                ADDONS.remove(shortname)
+            except:
+                pass
 
         except BaseException:
             name = f"addons.{shortname}"
@@ -449,40 +443,42 @@ def un_plug(shortname):
                 ev, cb = ultroid_bot._event_builders[i]
                 if cb.__module__ == name:
                     del ultroid_bot._event_builders[i]
-                    del LOADED[shortname]
-                    del LIST[shortname]
-                    ADDONS.remove(shortname)
+                    try:
+                        del LOADED[shortname]
+                        del LIST[shortname]
+                        ADDONS.remove(shortname)
+                    except KeyError:
+                        pass
     except BaseException:
         raise ValueError
 
 
-async def dler(sed):
+async def dler(ev, opts, url):
     try:
-        await sed.edit("`Fetching data, please wait..`")
+        await ev.edit("`Fetching data, please wait...`")
+        with YoutubeDL(opts) as ytdl:
+            ytdl_data = ytdl.extract_info(url)
     except DownloadError as DE:
-        await sed.edit(f"`{str(DE)}`")
+        return await ev.edit(f"`{str(DE)}`")
     except ContentTooShortError:
-        await sed.edit("`The download content was too short.`")
+        return await ev.edit("`The download content was too short.`")
     except GeoRestrictedError:
-        await sed.edit(
+        return await ev.edit(
             "`Video is not available from your geographic location due to geographic restrictions imposed by a website.`",
         )
     except MaxDownloadsReached:
-        await sed.edit("`Max-downloads limit has been reached.`")
+        return await ev.edit("`Max-downloads limit has been reached.`")
     except PostProcessingError:
-        await sed.edit("`There was an error during post processing.`")
+        return await ev.edit("`There was an error during post processing.`")
     except UnavailableVideoError:
-        await sed.edit("`Media is not available in the requested format.`")
+        return await ev.edit("`Media is not available in the requested format.`")
     except XAttrMetadataError as XAME:
-        await sed.edit(f"`{XAME.code}: {XAME.msg}\n{XAME.reason}`")
+        return await ev.edit(f"`{XAME.code}: {XAME.msg}\n{XAME.reason}`")
     except ExtractorError:
-        await sed.edit("`There was an error during info extraction.`")
+        return await ev.edit("`There was an error during info extraction.`")
     except Exception as e:
-        await sed.edit(f"{str(type(e)): {str(e)}}")
-
-
-def convert(seconds):
-    return time.strftime("%H:%M:%S", time.gmtime(seconds))
+        return await ev.edit(f"{str(type(e)): {str(e)}}")
+    return ytdl_data
 
 
 def time_formatter(milliseconds: int) -> str:
@@ -507,7 +503,7 @@ def humanbytes(size):
         return ""
     power = 2 ** 10
     raised_to_pow = 0
-    dict_power_n = {0: "", 1: "K", 2: "M", 3: "G", 4: "T"}
+    dict_power_n = {0: "B", 1: "K", 2: "M", 3: "G", 4: "T", 5: "P"}
     while size > power:
         size /= power
         raised_to_pow += 1
@@ -548,14 +544,14 @@ async def restart(ult):
         try:
             Heroku = heroku3.from_key(Var.HEROKU_API)
         except BaseException:
-            return await eor(
-                ult, "`HEROKU_API` is wrong! Kindly re-check in config vars."
+            return await ult.edit(
+                "`HEROKU_API` is wrong! Kindly re-check in config vars."
             )
-        await eor(ult, "`Restarting your app, please wait for a minute!`")
+        await ult.edit("`Restarting CɪᴘʜᴇʀX Bot, please wait...`")
         app = Heroku.apps()[Var.HEROKU_APP_NAME]
         app.restart()
     else:
-        await eor(ult, "`No HEROKU_API_KEY found.\nShutting down CɪᴘʜᴇʀX bot. Manually start me.`")
+        await ult.edit("`No HEROKU_API_KEY found.\nShutting down. Manually start me.`")
         await ult.client.disconnect()
         os.execl(sys.executable, sys.executable, *sys.argv)
 
@@ -597,20 +593,6 @@ def ReTrieveFile(input_file_name):
         "https://api.remove.bg/v1.0/removebg",
         headers=headers,
         files=files,
-        allow_redirects=True,
-        stream=True,
-    )
-    return r
-
-
-def ReTrieveURL(input_url):
-    RMBG_API = udB.get("RMBG_API")
-    headers = {"X-API-Key": RMBG_API}
-    data = {"image_url": input_url}
-    r = requests.post(
-        "https://api.remove.bg/v1.0/removebg",
-        headers=headers,
-        data=data,
         allow_redirects=True,
         stream=True,
     )
@@ -735,16 +717,18 @@ async def get_chatinfo(event):
         try:
             chat_info = await ultroid_bot(GetFullChannelRequest(chat))
         except ChannelInvalidError:
-            await ok.edit("`Invalid channel/group`")
+            await eor(event, "`Invalid channel/group`")
             return None
         except ChannelPrivateError:
-            await ok.edit("`This is a private channel/group or I'm banned from there`")
+            await eor(
+                event, "`This is a private channel/group or I'm banned from there`"
+            )
             return None
         except ChannelPublicGroupNaError:
-            await ok.edit("`Channel or supergroup doesn't exist`")
+            await eor(event, "`Channel or supergroup doesn't exist`")
             return None
         except (TypeError, ValueError) as err:
-            await ok.edit(str(err))
+            await eor(event, str(err))
             return None
     return chat_info
 
@@ -888,7 +872,7 @@ async def fetch_info(chat, event):
         for bot in bots_list:
             bots += 1
 
-    caption = "<b>CHAT INFO:</b>\n"
+    caption = "<b>CHAT INFO by CɪᴘʜᴇʀX Bot:</b>\n"
     caption += f"ID: <code>{chat_obj_info.id}</code>\n"
     if chat_title is not None:
         caption += f"{chat_type} name: {chat_title}\n"
@@ -980,7 +964,7 @@ async def safeinstall(event):
                         if dan in yy:
                             os.remove(downloaded_file_name)
                             return await ok.edit(
-                                f"**Installation Aborted**..\n coz ~ `{dan}` in {downloaded_file_name}\n\n`Dangerous plugin.\nMight leak your personal details or can be used to delete you account too`\nIf u still want to install use `{HNDLR}install f`",
+                                f"**Installation Aborted.**\n**Reason:** Occurance of `{dan}` in `{downloaded_file_name}`.\n\nIf you trust the provider and/or know what you're doing, use `{HNDLR}install f` to force install.",
                             )
                 except BaseException:
                     pass
@@ -994,16 +978,16 @@ async def safeinstall(event):
                         output = "**Plugin** - `{}`\n".format(plug)
                         for i in HELP[plug]:
                             output += i
-                        output += "\n© CɪᴘʜᴇʀX"
+                        output += "\n© CɪᴘʜᴇʀX Bot"
                         await ok.edit(
-                            f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{output}"
+                            f"✓ `CɪᴘʜᴇʀX Bot - Installed`: `{plug}` ✓\n\n{output}"
                         )
                         await asyncio.sleep(9)
                         await ok.delete()
                     elif plug in CMD_HELP:
                         kk = f"Plugin Name-{plug}\n\n✘ Commands Available-\n\n"
                         kk += str(CMD_HELP[plug])
-                        await ok.edit(f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{kk}")
+                        await ok.edit(f"✓ `CɪᴘʜᴇʀX Bot - Installed`: `{plug}` ✓\n\n{kk}")
                         await asyncio.sleep(9)
                         await ok.delete()
                     else:
@@ -1012,14 +996,17 @@ async def safeinstall(event):
                             for d in LIST[plug]:
                                 x += HNDLR + d
                                 x += "\n"
-                            await ok.edit(f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{x}")
+                            await ok.edit(
+                                f"✓ `CɪᴘʜᴇʀX Bot - Installed`: `{plug}` ✓\n\n`{x}`"
+                            )
                             await asyncio.sleep(5)
                             await ok.delete()
                         except BaseException:
-                            await ok.edit(f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓")
+                            await ok.edit(f"✓ `CɪᴘʜᴇʀX Bot - Installed`: `{plug}` ✓")
                             await asyncio.sleep(3)
                             await ok.delete()
-                except BaseException:
+                except Exception as e:
+                    await ok.edit(str(e))
                     pass
             else:
                 os.remove(downloaded_file_name)
@@ -1032,7 +1019,7 @@ async def safeinstall(event):
             await asyncio.sleep(4)
             await ok.delete()
     else:
-        ok = await eor(event, f"Please use `{HNDLR}install` as reply to a .py file.")
+        await ok.edit(f"Please use `{HNDLR}install` as reply to a .py file.")
         await asyncio.sleep(4)
         await ok.delete()
 
@@ -1050,7 +1037,7 @@ async def allcmds(event):
     )
     t = telegraph.create_page(title="CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ All Commands", content=[f"{xx}"])
     w = t["url"]
-    await eod(event, f"CɪᴘʜᴇʀX Bot Commands : [Click Here]({w})", link_preview=False)
+    await eod(event, f"CɪᴘʜᴇʀX Bot Commands: [Click Here]({w})", link_preview=False)
 
 
 def returnpage(query):
@@ -1067,16 +1054,67 @@ def animepp(link):
     f = re.compile("/\w+/full.+.jpg")
     f = f.findall(pc)
     fy = "http://getwallpapers.com" + random.choice(f)
-    urllib.request.urlretrieve(fy, "autopic.jpg")
+    res = requests.get(fy)
+    img = Image.open(io.BytesIO(res.content))
+    return img.save("autopic.jpg")
 
 
-async def randomchannel(tochat, channel, range1, range2):
+async def randomchannel(tochat, channel, range1, range2, caption=None):
     do = random.randrange(range1, range2)
     async for x in ultroid_bot.iter_messages(channel, add_offset=do, limit=1):
         try:
+            if x.media and caption:
+                await ultroid_bot.send_file(tochat, file=x, caption=caption)
+                return
             await ultroid_bot.send_message(tochat, x)
         except BaseException:
             try:
                 await ultroid_bot.send_file(tochat, x)
             except BaseException:
                 pass
+
+
+async def bash(cmd):
+    process = await asyncio.create_subprocess_shell(
+        cmd,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await process.communicate()
+    err = stderr.decode().strip()
+    out = stdout.decode().strip()
+    return out, err
+
+
+def mediainfo(media):
+    if media:
+        xx = str((str(media)).split("(", maxsplit=1)[0])
+        if xx == "MessageMediaPhoto":
+            m = "pic"
+        elif xx == "MessageMediaDocument":
+            mim = media.document.mime_type
+            if mim == "application/x-tgsticker":
+                m = "sticker animated"
+            elif "image" in mim:
+                if mim == "image/webp":
+                    m = "sticker"
+                elif mim == "image/gif":
+                    m = "gif as doc"
+                else:
+                    m = "pic as doc"
+            elif "video" in mim:
+                if "DocumentAttributeAnimated" in str(media):
+                    m = "gif"
+                elif "DocumentAttributeVideo" in str(media):
+                    i = str(media.document.attributes[0])
+                    if "supports_streaming=True" in i:
+                        m = "video"
+                    else:
+                        m = "video as doc"
+                else:
+                    m = "video as doc"
+            elif "audio" in mim:
+                m = "audio"
+            else:
+                m = "document"
+        return m
