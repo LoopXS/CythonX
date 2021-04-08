@@ -115,6 +115,7 @@ def load_addons(plugin_name):
         mod.asst = ultroid_bot.asst
         mod.tgbot = ultroid_bot.asst
         mod.ultroid_bot = ultroid_bot
+        mod.ub = ultroid_bot
         mod.bot = ultroid_bot
         mod.ultroid = ultroid_bot
         mod.borg = ultroid_bot
@@ -143,6 +144,7 @@ def load_addons(plugin_name):
         mod.Redis = udB.get
         mod.admin_cmd = admin_cmd
         mod.sudo_cmd = sudo_cmd
+        sys.modules["ub"] = xxx
         sys.modules["var"] = xxx
         sys.modules["jarvis"] = xxx
         sys.modules["support"] = xxx
