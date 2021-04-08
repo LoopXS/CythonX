@@ -358,7 +358,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
     media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
     body = {
         "title": file_name,
-        "description": "Uploaded using Ultroid Userbot",
+        "description": "Uploaded using CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ",
         "mimeType": mime_type,
     }
     if parent_id is not None:
@@ -978,16 +978,16 @@ async def safeinstall(event):
                         output = "**Plugin** - `{}`\n".format(plug)
                         for i in HELP[plug]:
                             output += i
-                        output += "\n© CɪᴘʜᴇʀX Bot"
+                        output += "\n© CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ"
                         await ok.edit(
-                            f"✓ `CɪᴘʜᴇʀX Bot - Installed`: `{plug}` ✓\n\n{output}"
+                            f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{output}"
                         )
                         await asyncio.sleep(9)
                         await ok.delete()
                     elif plug in CMD_HELP:
                         kk = f"Plugin Name-{plug}\n\n✘ Commands Available-\n\n"
                         kk += str(CMD_HELP[plug])
-                        await ok.edit(f"✓ `CɪᴘʜᴇʀX Bot - Installed`: `{plug}` ✓\n\n{kk}")
+                        await ok.edit(f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{kk}")
                         await asyncio.sleep(9)
                         await ok.delete()
                     else:
@@ -997,12 +997,12 @@ async def safeinstall(event):
                                 x += HNDLR + d
                                 x += "\n"
                             await ok.edit(
-                                f"✓ `CɪᴘʜᴇʀX Bot - Installed`: `{plug}` ✓\n\n`{x}`"
+                                f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n`{x}`"
                             )
                             await asyncio.sleep(5)
                             await ok.delete()
                         except BaseException:
-                            await ok.edit(f"✓ `CɪᴘʜᴇʀX Bot - Installed`: `{plug}` ✓")
+                            await ok.edit(f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓")
                             await asyncio.sleep(3)
                             await ok.delete()
                 except Exception as e:
