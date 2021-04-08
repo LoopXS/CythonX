@@ -21,7 +21,7 @@ setuptools.setup(
     license=license,
     packages=setuptools.find_packages(),
     install_requires=[
-        "telethon>=1.19.5",
+        "telethon==1.21.1",
         "redis",
         "python-decouple==3.3",
         "cryptg",
