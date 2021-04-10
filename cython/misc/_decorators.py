@@ -192,7 +192,7 @@ def ultroid_cmd(allow_sudo=on, **args):
                         Placetosend = ultroid_bot.uid
                     await ultroid_bot.asst.send_file(
                         Placetosend,
-                        "ultroid-log.txt",
+                        "cipherx.txt",
                         caption=text,
                     )
                     remove("cipherx.txt")
