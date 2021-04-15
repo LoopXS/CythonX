@@ -37,7 +37,7 @@ def get_reply(chat, word):
         try:
             if str(x[0]) == str(chat) and str(x[1]).lower() == str(word).lower():
                 return x[1]
-        except:
+        except BaseException:
             pass
     return None
 
@@ -100,7 +100,7 @@ def rem_blacklist(chat, word):
         try:
             x.remove(the_thing)
             x.remove(the_thing2)
-        except:
+        except BaseException:
             pass
         if len(x) < 2:
             udB.set("BLACKLIST", list_to_str(x))
