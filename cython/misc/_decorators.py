@@ -1,30 +1,31 @@
-from .. import *
-from ..utils import *
-import re
 import inspect
+import re
 import sys
-import asyncio
+from asyncio import create_subprocess_shell as asyncsubshell
+from asyncio import subprocess as asyncsub
+from os import remove
+from pathlib import Path
+from sys import *
+from time import gmtime, sleep, strftime
+from traceback import format_exc
+
 import requests
 from telethon import *
-from ..dB.database import Var
-from ..dB.core import *
-from ..functions.all import time_formatter as tf
-from pathlib import Path
-from traceback import format_exc
-from time import gmtime, strftime, sleep
-from asyncio import create_subprocess_shell as asyncsubshell, subprocess as asyncsub
-from os import remove
-from sys import *
 from telethon.errors.rpcerrorlist import (
     FloodWaitError,
     MessageIdInvalidError,
     MessageNotModifiedError,
 )
+
+from .. import *
+from ..dB.core import *
+from ..dB.database import Var
+from ..functions.all import time_formatter as tf
+from ..utils import *
 from ._wrappers import *
 
-
 # sudo
-ok = udB.get("SUDOS")
+ok = udB["SUDOS"]
 if ok:
     SUDO_USERS = set(int(x) for x in ok.split())
 else:
@@ -35,7 +36,7 @@ if SUDO_USERS:
 else:
     sudos = ""
 
-on = udB.get("SUDO") if udB.get("SUDO") is not None else "False"
+on = udB["SUDO"] if udB["SUDO"] is not None else "False"
 
 if on == "True":
     sed = [ultroid_bot.uid, *sudos]
@@ -54,11 +55,9 @@ def ultroid_cmd(allow_sudo=on, **args):
     previous_stack_frame = stack[1]
     file_test = Path(previous_stack_frame.filename)
     file_test = file_test.stem.replace(".py", "")
-    pattern = args.get("pattern", None)
+    pattern = args["pattern"]
     groups_only = args.get("groups_only", False)
     admins_only = args.get("admins_only", False)
-    disable_errors = args.get("disable_errors", False)
-    trigger_on_fwd = args.get("trigger_on_fwd", False)
     args["outgoing"] = True
 
     if allow_sudo == "True":
@@ -88,13 +87,13 @@ def ultroid_cmd(allow_sudo=on, **args):
                     .replace("?((.|//)*)", "")
                     .replace("?P<shortname>\\w+", "")
                 )
-            except:
+            except BaseException:
                 pass
             try:
                 LIST[file_test].append(cmd)
-            except:
+            except BaseException:
                 LIST.update({file_test: [cmd]})
-        except:
+        except BaseException:
             pass
     args["blacklist_chats"] = True
     black_list_chats = list(Var.BLACKLIST_CHAT)
@@ -109,18 +108,12 @@ def ultroid_cmd(allow_sudo=on, **args):
         del args["admins_only"]
     if "groups_only" in args:
         del args["groups_only"]
-    if "disable_errors" in args:
-        del args["disable_errors"]
-    if "trigger_on_fwd" in args:
-        del args["trigger_on_fwd"]
     # check if the plugin should listen for outgoing 'messages'
 
     def decorator(func):
         async def wrapper(ult):
             chat = await ult.get_chat()
-            if not trigger_on_fwd and ult.fwd_from:
-                return
-            if disable_errors:
+            if ult.fwd_from:
                 return
             if groups_only and ult.is_private:
                 return await eod(ult, "`Use this in group/channel.`", time=3)
@@ -148,8 +141,7 @@ def ultroid_cmd(allow_sudo=on, **args):
                 pass
             except BaseException as e:
                 LOGS.exception(e)
-                if not disable_errors:
-                    date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
                     text = """
 **CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Error Report**
