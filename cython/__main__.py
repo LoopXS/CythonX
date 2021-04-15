@@ -1,16 +1,19 @@
-import glob
-import os
 import asyncio
-from pathlib import Path
-from . import *
+import glob
 import logging
-from telethon import TelegramClient
+import os
+from pathlib import Path
+
 import telethon.utils
-from .utils import *
+from telethon import TelegramClient
+from telethon import __version__ as vers
 from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
 from telethon.tl.functions.channels import JoinChannelRequest
-from telethon.tl.functions.channels import LeaveChannelRequest
 from telethon.tl.types import InputMessagesFilterDocument
+
+from . import *
+from .utils import *
+from .version import __version__ as ver
 
 # logging.basicConfig(filename="cipherx.log", filemode="w",
 #    format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s", level=logging.INFO
@@ -63,14 +66,18 @@ async def bot_info(BOT_TOKEN):
 LOGS.info(
     """
                 -----------------------------------
-                        Starting Deployment        
+                        Starting Deployment
                 -----------------------------------
 """
 )
 
 ultroid_bot.asst = None
-LOGS.info("Initializing...")
-if Var.BOT_TOKEN is not None:
+LOGS.info("Initialising...")
+LOGS.info(f"CythonX Version - {ver}")
+LOGS.info(f"Telethon Version - {vers}")
+LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.5")
+
+if Var.BOT_TOKEN:
     LOGS.info("Starting CɪᴘʜᴇʀX Bot...")
     try:
         ultroid_bot.asst = TelegramClient(
@@ -111,7 +118,7 @@ for name in files:
 
 # for addons
 addons = udB.get("ADDONS")
-if addons == "True" or addons == None:
+if addons == "True" or addons is None:
     os.system("git clone https://github.com/CipherX1-ops/Megatron-addons.git ./addons/")
     LOGS.info("Installing packages for addons")
     os.system("pip install -r ./addons/addons.txt")
@@ -212,19 +219,19 @@ if pmbot == "True":
 async def semxy():
     try:
         xx = await ultroid_bot.get_entity(Var.BOT_USERNAME)
-        if xx.photo == None:
+        if xx.photo is None:
             LOGS.info("Customizing your Assistant Bot in @BOTFATHER")
             RD = Var.BOT_USERNAME
             if RD.startswith("@"):
                 UL = RD
             else:
                 UL = f"@{RD}"
-            if (ultroid_bot.me.username) == None:
+            if (ultroid_bot.me.username) is None:
                 sir = ultroid_bot.me.first_name
             else:
                 sir = f"@{ultroid_bot.me.username}"
             await ultroid_bot.send_message(
-                Var.LOG_CHANNEL, "Auto Customization Started on @botfather"
+                Var.LOG_CHANNEL, "Auto Customisation Started on @botfather"
             )
             await asyncio.sleep(1)
             await ultroid_bot.send_message("botfather", "/cancel")
@@ -253,15 +260,15 @@ async def semxy():
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
                 "botfather",
-                f"✨PowerFull CɪᴘʜᴇʀX Assistant Bot✨\n✨Master ~ {sir} ✨\n\n✨Powered By ~ CɪᴘʜᴇʀX ✨",
+                f"✨PowerFull CɪᴘʜᴇʀX Bot Assistant Bot✨\n✨Master ~ {sir} ✨\n\n✨Powered By ~ CɪᴘʜᴇʀX ✨",
             )
             await asyncio.sleep(2)
             await ultroid_bot.send_message("botfather", "/start")
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
-                Var.LOG_CHANNEL, "**Auto Customization** Done at @BotFather"
+                Var.LOG_CHANNEL, "**Auto Customisation** Done at @BotFather"
             )
-            LOGS.info("Customization Done")
+            LOGS.info("Customisation Done")
     except Exception as e:
         LOGS.warning(str(e))
 
@@ -300,9 +307,9 @@ ultroid_bot.loop.run_until_complete(hehe())
 
 LOGS.info(
     """
-                -----------------------------------------
-                    CɪᴘʜᴇʀX Bot has been deployed! 
-                -----------------------------------------
+                ----------------------------------------------------------------------
+                    CɪᴘʜᴇʀX Bot has been deployed! Visit @CipherXBot for updates!!
+                ----------------------------------------------------------------------
 """
 )
 
