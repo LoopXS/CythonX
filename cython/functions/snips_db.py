@@ -1,56 +1,39 @@
 from .. import udB
 
 
-def list_to_str(list):  # Returns String
-    str = ""
-    for x in list:
-        str += f"{x} "
-    return str.strip()
-
-
-def str_to_list(text):  # Returns List
-    return text.split(" ")
-
-
 def ls(list):
-    str = ""
+    z = 0
+    xx = ""
     for x in list:
-        str += f"{x} |||"
-    return str.strip()
-
-
-def get_all_stuff():  # Returns List
-    fills = udB.get("SNIPS")
-    if fills is None or fills == "":
-        return [""]
-    else:
-        return str_to_list(fills)
+        z += 1
+        if z == len(list):
+            xx += x
+        else:
+            xx += f"{x}|||"
+    return xx
 
 
 def get_reply(word):
-    masala = udB.get("SNIPS")
+    masala = udB.get("SNIP")
     if not masala:
         return
     x = masala.split("|||")
     for i in x:
-        x = i.split(":|")
-        try:
-            if str(x[0]).lower() == str(word).lower():
-                return eval(x[1])
-        except:
-            pass
+        x = i.split("$|")
+        if str(x[0]) == str(word):
+            return eval(x[1])
     return None
 
 
 def list_snip():
-    fl = udB.get("SNIPS")
+    fl = udB.get("SNIP")
     if not fl:
         return None
     rt = fl.split("|||")
     tata = ""
     tar = 0
     for on in rt:
-        er = on.split(":|")
+        er = on.split("$|")
         tata += f"👉 `${er[0]}`\n"
         tar += 1
     if tar == 0:
@@ -59,31 +42,32 @@ def list_snip():
 
 
 def get_snips():
-    fl = udB.get("SNIPS")
-    if not fl:
-        return None
-    rt = fl.split("|||")
-    tata = ""
-    tar = 0
-    for on in rt:
-        er = on.split(":|")
-        tata += f"{er[0]} "
-        tar += 1
-    if tar == 0:
-        return None
-    return tata
+    if udB.get("SNIP"):
+        return True
+    else:
+        return
 
 
 def add_snip(word, msg, media):
     try:
-        dumb_masala = get_all_stuff()
         rr = str({"msg": msg, "media": media})
-        the_thing = f"|||{word}:|{rr}"
-        rt = udB.get("SNIPS")
+        the_thing = f"{chat}$|{word}$|{rr}"
+        rt = udB.get("SNIP")
         if not rt:
-            the_thing = f"{word}:|{rr}"
-        dumb_masala.append(the_thing)
-        udB.set("SNIPS", list_to_str(dumb_masala))
+            the_thing = f"{word}$|{rr}"
+            udB.set("SNIP", the_thing)
+        else:
+            xx = rt.split("|||")
+            for y in xx:
+                yy = y.split("$|")
+                if str(yy[0]) == str(word):
+                    xx.remove(y)
+                    if the_thing not in xx:
+                        xx.append(the_thing)
+                else:
+                    if the_thing not in xx:
+                        xx.append(the_thing)
+            udB.set("SNIP", ls(xx))
         return True
     except Exception as e:
         print(e)
@@ -91,22 +75,12 @@ def add_snip(word, msg, media):
 
 
 def rem_snip(word):
-    try:
-        d = list_to_str(get_all_stuff())
-        x = d.split("|||")
-        reply = str(get_reply(word))
-        the_thing = f"{word}:|{reply} "
-        the_thing2 = f"{word}:|{reply}"
-        try:
-            x.remove(the_thing)
-            x.remove(the_thing2)
-        except BaseException:
-            pass
-        if len(x) < 2:
-            udB.set("SNIPS", list_to_str(x))
-        else:
-            udB.set("SNIPS", ls(x))
-        return True
-    except Exception as e:
-        print(e)
-        return False
+    masala = udB.get("SNIP")
+    if not masala:
+        return
+    yx = masala.split("|||")
+    for i in yx:
+        x = i.split("$|")
+        if str(x[0]) == str(word):
+            yx.remove(i)
+    return udB.set("SNIP", ls(yx))
