@@ -1,5 +1,6 @@
 import asyncio
 import functools
+
 from .. import *
 from ..functions.sudos import *
 
@@ -23,7 +24,7 @@ async def eod(event, text=None, **args):
             )
     else:
         ult = await event.edit(text, link_preview=link_preview, parse_mode=parse_mode)
-    if time == None:
+    if time is None:
         return ult
     else:
         await asyncio.sleep(time)
