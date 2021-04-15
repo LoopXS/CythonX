@@ -1,49 +1,35 @@
 from .. import udB
 
 
-def list_to_str(list):  # Returns String
-    str = ""
-    for x in list:
-        str += f"{x} "
-    return str.strip()
-
-
-def str_to_list(text):  # Returns List
-    return text.split(" ")
-
-
 def ls(list):
-    str = ""
+    z = 0
+    xx = ""
     for x in list:
-        str += f"{x} |||"
-    return str.strip()
-
-
-def get_all_stuff():  # Returns List
-    fills = udB.get("NOTES")
-    if fills is None or fills == "":
-        return [""]
-    else:
-        return str_to_list(fills)
+        z += 1
+        if z == len(list):
+            xx += x
+        else:
+            xx += f"{x}|||"
+    return xx
 
 
 def get_reply(chat, word):
-    masala = udB.get("NOTES")
+    masala = udB.get("NOTE")
     if not masala:
         return
     x = masala.split("|||")
     for i in x:
         x = i.split("$|")
         try:
-            if str(x[0]) == str(chat) and str(x[1]).lower() == str(word).lower():
+            if str(x[0]) == str(chat) and str(x[1]) == str(word):
                 return eval(x[2])
-        except:
+        except BaseException:
             pass
     return None
 
 
 def list_note(chat):
-    fl = udB.get("NOTES")
+    fl = udB.get("NOTE")
     if not fl:
         return None
     rt = fl.split("|||")
@@ -59,33 +45,59 @@ def list_note(chat):
     return tata
 
 
-def get_notes(chat):
-    fl = udB.get("NOTES")
+def rem_all_note(chat):
+    fl = udB.get("NOTE")
     if not fl:
         return None
     rt = fl.split("|||")
-    tata = ""
-    tar = 0
     for on in rt:
         er = on.split("$|")
         if str(er[0]) == str(chat):
-            tata += f"{er[1]} "
-            tar += 1
-    if tar == 0:
+            rt.remove(on)
+    udB.set("NOTE", ls(rt))
+    return
+
+
+def get_notes(chat):
+    fl = udB.get("NOTE")
+    if not fl:
         return None
-    return tata
+    rt = fl.split("|||")
+    k = ""
+    for on in rt:
+        er = on.split("$|")
+        if str(er[0]) == str(chat):
+            k += "omk"
+    if k:
+        return True
+    else:
+        return None
 
 
 def add_note(chat, word, msg, media):
     try:
-        dumb_masala = get_all_stuff()
         rr = str({"msg": msg, "media": media})
-        the_thing = f"|||{chat}$|{word}$|{rr}"
-        rt = udB.get("NOTES")
+        the_thing = f"{chat}$|{word}$|{rr}"
+        rt = udB.get("NOTE")
         if not rt:
             the_thing = f"{chat}$|{word}$|{rr}"
-        dumb_masala.append(the_thing)
-        udB.set("NOTES", list_to_str(dumb_masala))
+            udB.set("NOTE", the_thing)
+        else:
+            xx = rt.split("|||")
+            for y in xx:
+                yy = y.split("$|")
+                if str(yy[0]) == str(chat):
+                    if str(yy[1]) == str(word):
+                        xx.remove(y)
+                        if the_thing not in xx:
+                            xx.append(the_thing)
+                    else:
+                        if the_thing not in xx:
+                            xx.append(the_thing)
+                else:
+                    if the_thing not in xx:
+                        xx.append(the_thing)
+            udB.set("NOTE", ls(xx))
         return True
     except Exception as e:
         print(e)
@@ -93,22 +105,12 @@ def add_note(chat, word, msg, media):
 
 
 def rem_note(chat, word):
-    try:
-        d = list_to_str(get_all_stuff())
-        x = d.split("|||")
-        reply = get_reply(chat, word)
-        the_thing = f"{chat}$|{word}$|{reply} "
-        the_thing2 = f"{chat}$|{word}$|{reply}"
-        try:
-            x.remove(the_thing)
-            x.remove(the_thing2)
-        except BaseException:
-            pass
-        if len(x) < 2:
-            udB.set("NOTES", list_to_str(x))
-        else:
-            udB.set("NOTES", ls(x))
-        return True
-    except Exception as e:
-        print(e)
-        return False
+    masala = udB.get("NOTE")
+    if not masala:
+        return
+    yx = masala.split("|||")
+    for i in yx:
+        x = i.split("$|")
+        if str(x[0]) == str(chat) and str(x[1]) == str(word):
+            yx.remove(i)
+    return udB.set("NOTE", ls(yx))
