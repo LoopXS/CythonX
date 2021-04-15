@@ -1,6 +1,8 @@
-from . import *
-from telethon import *
 from sys import *
+
+from telethon import *
+
+from . import *
 
 
 def load_plugins(plugin_name):
@@ -18,20 +20,21 @@ def load_plugins(plugin_name):
     else:
         import importlib
         import sys
+        from pathlib import Path
+
+        from . import HNDLR, LOGS, udB, ultroid_bot
+        from .dB.database import Var
+        from .misc import _supporter as xxx
         from .misc._assistant import (
-            owner,
             asst_cmd,
             callback,
+            in_pattern,
             inline,
             inline_owner,
-            in_pattern,
+            owner,
         )
-        from .misc._wrappers import eod, eor
         from .misc._decorators import ultroid_cmd
-        from .misc import _supporter as xxx
-        from pathlib import Path
-        from .dB.database import Var
-        from . import LOGS, ultroid_bot, udB, HNDLR
+        from .misc._wrappers import eod, eor
 
         path = Path(f"plugins/{plugin_name}.py")
         name = "plugins.{}".format(plugin_name)
@@ -92,21 +95,22 @@ def load_addons(plugin_name):
     else:
         import importlib
         import sys
+        from pathlib import Path
+
+        from . import HNDLR, LOGS, udB, ultroid_bot
+        from .dB.database import Var
+        from .misc import _supporter as xxx
         from .misc._assistant import (
-            owner,
             asst_cmd,
             callback,
+            in_pattern,
             inline,
             inline_owner,
-            in_pattern,
+            owner,
         )
-        from .misc._wrappers import eod, eor
         from .misc._decorators import ultroid_cmd
-        from .misc import _supporter as xxx
         from .misc._supporter import Config, admin_cmd, sudo_cmd
-        from pathlib import Path
-        from .dB.database import Var
-        from . import LOGS, ultroid_bot, udB, HNDLR
+        from .misc._wrappers import eod, eor
 
         path = Path(f"addons/{plugin_name}.py")
         name = "addons.{}".format(plugin_name)
@@ -190,11 +194,11 @@ def load_assistant(plugin_name):
     else:
         import importlib
         import sys
-        from .misc._assistant import owner, asst_cmd, callback, inline_owner, in_pattern
-        from .misc._wrappers import eod, eor
         from pathlib import Path
-        from .dB.database import Var
-        from . import ultroid_bot, HNDLR
+
+        from . import HNDLR, udB, ultroid_bot
+        from .misc._assistant import asst_cmd, callback, in_pattern, inline_owner, owner
+        from .misc._wrappers import eod, eor
 
         path = Path(f"assistant/{plugin_name}.py")
         name = "assistant.{}".format(plugin_name)
@@ -202,6 +206,9 @@ def load_assistant(plugin_name):
         mod = importlib.util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
         mod.ultroid = ultroid_bot
+        mod.Redis = udB.get
+        mod.udB = udB
+        mod.bot = ultroid_bot
         mod.asst = ultroid_bot.asst
         mod.owner = owner()
         mod.in_pattern = in_pattern
@@ -234,11 +241,11 @@ def load_pmbot(plugin_name):
     else:
         import importlib
         import sys
-        from .misc._assistant import owner, asst_cmd, callback
-        from .misc._wrappers import eod, eor
         from pathlib import Path
-        from .dB.database import Var
-        from . import ultroid_bot, HNDLR
+
+        from . import HNDLR, udB, ultroid_bot
+        from .misc._assistant import asst_cmd, callback, owner
+        from .misc._wrappers import eod, eor
 
         path = Path(f"assistant/pmbot/{plugin_name}.py")
         name = "assistant.pmbot.{}".format(plugin_name)
@@ -246,6 +253,9 @@ def load_pmbot(plugin_name):
         mod = importlib.util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
         mod.ultroid = ultroid_bot
+        mod.bot = ultroid_bot
+        mod.Redis = udB.get
+        mod.udB = udB
         mod.asst = ultroid_bot.asst
         mod.owner = owner()
         mod.eod = eod
