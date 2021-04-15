@@ -40,7 +40,7 @@ def gban(id):
         gbun.append(id)
         udB.set("GBAN", list_to_str(gbun))
         return True
-    except:
+    except BaseException:
         return False
 
 
@@ -53,7 +53,7 @@ def ungban(id):
         gbun.remove(id)
         udB.set("GBAN", list_to_str(gbun))
         return True
-    except Exception as e:
+    except Exception:
         return False
 
 
@@ -85,7 +85,7 @@ def gmute(id):
         gmute.append(id)
         udB.set("GMUTE", list_to_str(gmute))
         return True
-    except:
+    except BaseException:
         return False
 
 
@@ -98,5 +98,5 @@ def ungmute(id):
         gmute.remove(id)
         udB.set("GMUTE", list_to_str(gmute))
         return True
-    except Exception as e:
+    except Exception:
         return False
