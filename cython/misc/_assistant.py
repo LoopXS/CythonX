@@ -1,10 +1,14 @@
 import functools
+
+from telethon import *
 from telethon import events
-from .. import *
-from ..utils import *
-from ._decorators import sed
 from telethon.tl.types import InputWebDocument
 from telethon.utils import get_display_name
+
+from .. import *
+from ..dB.core import *
+from ..utils import *
+from ._decorators import sed
 
 OWNER_NAME = ultroid_bot.me.first_name
 OWNER_ID = ultroid_bot.me.id
