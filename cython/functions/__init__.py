@@ -1,4 +1,5 @@
 from cython import *
+
 from ..dB.database import Var
 
 DANGER = [
@@ -16,4 +17,3 @@ DANGER = [
     "sys.stdout",
     "sys.stderr",
 ]
-
