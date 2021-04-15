@@ -64,7 +64,7 @@ def rem_source_channel(id):
         channels.remove(str(id))
         udB.set("CH_SOURCE", list_to_str(channels))
         return True
-    except Exception as e:
+    except Exception:
         return False
 
 
