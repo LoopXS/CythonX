@@ -1,36 +1,47 @@
-from bs4 import BeautifulSoup as bs
-from telegraph import Telegraph
-from pathlib import Path
-from ..dB.database import Var
-from ..dB.core import *
-from telethon.tl.types import MessageEntityMentionName
-from .. import *
-from ..utils import *
-from datetime import datetime
+import asyncio
+import io
+import math
+import os
+import random
+import re
+import time
 from math import sqrt
+from mimetypes import guess_type
+from os import execl
+from pathlib import Path
+from sys import executable
+
+import heroku3
+import httplib2
+import requests
+from apiclient.http import MediaFileUpload
+from bs4 import BeautifulSoup as bs
 from emoji import emojize
+from googleapiclient.discovery import build
+from html_telegraph_poster import TelegraphPoster
+from oauth2client.client import OAuth2WebServerFlow
+from oauth2client.file import Storage
+from PIL import Image
+from telegraph import Telegraph
+from telethon import events
 from telethon.errors import (
     ChannelInvalidError,
     ChannelPrivateError,
     ChannelPublicGroupNaError,
 )
-from telethon import events
 from telethon.tl.functions.channels import GetFullChannelRequest, GetParticipantsRequest
 from telethon.tl.functions.messages import GetFullChatRequest, GetHistoryRequest
+from telethon.tl.functions.users import GetFullUserRequest
 from telethon.tl.types import (
     ChannelParticipantsAdmins,
-    ChannelParticipantCreator,
     MessageActionChannelMigrateFrom,
     MessageEntityMentionName,
 )
-from telethon.tl.functions.users import GetFullUserRequest
 from telethon.utils import get_input_location
-from PIL import Image
-from ..misc._wrappers import *
-from ..misc import *
+from youtube_dl import YoutubeDL
 from youtube_dl.utils import (
-    DownloadError,
     ContentTooShortError,
+    DownloadError,
     ExtractorError,
     GeoRestrictedError,
     MaxDownloadsReached,
@@ -38,14 +49,13 @@ from youtube_dl.utils import (
     UnavailableVideoError,
     XAttrMetadataError,
 )
-from youtube_dl import YoutubeDL
-import asyncio, os, httplib2, heroku3, time, requests, random, math, io, urllib, re
-from telethon import events
-from googleapiclient.discovery import build
-from apiclient.http import MediaFileUpload
-from oauth2client.client import OAuth2WebServerFlow
-from oauth2client.file import Storage
-from mimetypes import guess_type
+
+from .. import *
+from ..dB.core import *
+from ..dB.database import Var
+from ..misc import *
+from ..misc._wrappers import *
+from ..utils import *
 
 OAUTH_SCOPE = "https://www.googleapis.com/auth/drive.file"
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
@@ -64,6 +74,18 @@ CMD_WEB = {
     "file.io": 'curl -F "file=@{}" https://file.io',
     "siasky": 'curl -X POST "https://siasky.net/skynet/skyfile" -F "file=@{}"',
 }
+
+
+def html(title, author, text):
+    client = TelegraphPoster(use_api=True)
+    client.create_api_token(title)
+    page = client.post(
+        title=title,
+        author=author,
+        author_url="https://t.me/CipherXBot",
+        text=text,
+    )
+    return page["url"]
 
 
 async def get_user_id(ids):
@@ -242,7 +264,7 @@ def list_files(http):
 async def gsearch(http, query, filename):
     drive_service = build("drive", "v2", http=http)
     page_token = None
-    msg = "**CɪᴘʜᴇʀX Bot G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
+    msg = "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
     while True:
         response = (
             drive_service.files()
@@ -369,7 +391,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
         "value": None,
         "withLink": True,
     }
-    file_size = os.path.getsize(file_path)
+    os.path.getsize(file_path)
     file = drive_service.files().insert(body=body, media_body=media_body)
     times = time.time()
     response = None
@@ -389,7 +411,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
                 round(percentage, 2),
             )
             current_message = (
-                f"`✦ Uploading to G-Drive by CɪᴘʜᴇʀX Bot`\n\n"
+                f"`✦ Uploading to G-Drive by CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ`\n\n"
                 + f"`✦ File Name:` `{file_name}`\n\n"
                 + f"{progress_str}\n\n"
                 + f"`✦ Uploaded:` `{humanbytes(uploaded)} of {humanbytes(t_size)}`\n"
@@ -433,7 +455,7 @@ def un_plug(shortname):
                 del LOADED[shortname]
                 del LIST[shortname]
                 ADDONS.remove(shortname)
-            except:
+            except BaseException:
                 pass
 
         except BaseException:
@@ -547,13 +569,11 @@ async def restart(ult):
             return await ult.edit(
                 "`HEROKU_API` is wrong! Kindly re-check in config vars."
             )
-        await ult.edit("`Restarting CɪᴘʜᴇʀX Bot, please wait...`")
+        await ult.edit("`Restarting CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ, please wait...`")
         app = Heroku.apps()[Var.HEROKU_APP_NAME]
         app.restart()
     else:
-        await ult.edit("`No HEROKU_API_KEY found.\nShutting down. Manually start me.`")
-        await ult.client.disconnect()
-        os.execl(sys.executable, sys.executable, *sys.argv)
+        execl(executable, executable, "-m", "cython")
 
 
 async def get_user_info(event):
@@ -721,7 +741,7 @@ async def get_chatinfo(event):
             return None
         except ChannelPrivateError:
             await eor(
-                event, "`This is a private channel/group or I'm banned from there`"
+                event, "`This is a private channel/group or I am banned from there`"
             )
             return None
         except ChannelPublicGroupNaError:
@@ -872,7 +892,7 @@ async def fetch_info(chat, event):
         for bot in bots_list:
             bots += 1
 
-    caption = "<b>CHAT INFO by CɪᴘʜᴇʀX Bot:</b>\n"
+    caption = "<b>CHAT INFO by CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ:</b>\n"
     caption += f"ID: <code>{chat_obj_info.id}</code>\n"
     if chat_title is not None:
         caption += f"{chat_type} name: {chat_title}\n"
@@ -1007,7 +1027,6 @@ async def safeinstall(event):
                             await ok.delete()
                 except Exception as e:
                     await ok.edit(str(e))
-                    pass
             else:
                 os.remove(downloaded_file_name)
                 await ok.edit("**ERROR**\nPlugin might have been pre-installed.")
@@ -1037,7 +1056,7 @@ async def allcmds(event):
     )
     t = telegraph.create_page(title="CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ All Commands", content=[f"{xx}"])
     w = t["url"]
-    await eod(event, f"CɪᴘʜᴇʀX Bot Commands: [Click Here]({w})", link_preview=False)
+    await eod(event, f"CɪᴘʜᴇʀX Bot Commands : [Click Here]({w})", link_preview=False)
 
 
 def returnpage(query):
@@ -1051,7 +1070,7 @@ def returnpage(query):
 
 def animepp(link):
     pc = requests.get(link).text
-    f = re.compile("/\w+/full.+.jpg")
+    f = re.compile("/\\w+/full.+.jpg")
     f = f.findall(pc)
     fy = "http://getwallpapers.com" + random.choice(f)
     res = requests.get(fy)
