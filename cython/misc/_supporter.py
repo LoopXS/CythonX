@@ -1,24 +1,25 @@
-from telethon.tl.types import ChatBannedRights
-import os
-from .. import *
-from ..utils import *
-from cython.misc._decorators import *
-from cython.misc._wrappers import *
-import re
-import inspect
 import functools
-from ..functions.sudos import *
-from telethon import *
-from plugins import *
-from ..dB.database import Var
-from ..dB.core import *
+import inspect
+import os
+import re
 from pathlib import Path
 from sys import *
 
+from plugins import *
+from telethon import *
+from telethon.tl.types import ChatBannedRights
+
+from cython.misc._decorators import *
+from cython.misc._wrappers import *
+
+from .. import *
+from ..dB.core import *
+from ..dB.database import Var
+from ..functions.sudos import *
+from ..utils import *
+
 import logging
 from logging import DEBUG, INFO, basicConfig, getLogger
-
-from . import CMD_HELP
 
 sedprint = logging.getLogger("CɪᴘʜᴇʀX")
 
@@ -72,13 +73,13 @@ def admin_cmd(pattern=None, command=None, **args):
                     .replace("?((.|//)*)", "")
                     .replace("?P<shortname>\\w+", "")
                 )
-            except:
+            except BaseException:
                 pass
             try:
                 LIST[file_test].append(cmd)
-            except:
+            except BaseException:
                 LIST.update({file_test: [cmd]})
-        except:
+        except BaseException:
             pass
     args["outgoing"] = True
     if "incoming" in args and not args["incoming"]:
@@ -131,7 +132,7 @@ edit_or_reply = eor
 edit_delete = eod
 
 #   To Install Other UB plugins
-#   CɪᴘʜᴇʀX Bot Don't Need This Configs
+#   CɪᴘʜᴇʀX Bot Doesn't Need This Configs
 
 ENV = bool(os.environ.get("ENV", False))
 if ENV:
