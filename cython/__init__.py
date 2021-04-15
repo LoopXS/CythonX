@@ -1,20 +1,22 @@
 import os
-from redis import ConnectionError, ResponseError, StrictRedis
-from telethon.sessions import StringSession
-from telethon import TelegramClient
-from .dB.database import Var
-from .dB.core import *
-from logging import basicConfig, getLogger, INFO, DEBUG, warning as wr
+from datetime import datetime
 from distutils.util import strtobool as sb
+from logging import DEBUG, INFO, basicConfig, getLogger
+from logging import warning as wr
+
+from decouple import config
+from redis import ConnectionError, ResponseError, StrictRedis
+from telethon import TelegramClient
+from telethon.sessions import StringSession
+
+from .dB.core import *
+from .dB.database import Var
+from .functions import *
 from .misc import *
 from .utils import *
-from .functions import *
-from decouple import config
-from datetime import datetime
+from .version import __version__
 
 LOGS = getLogger(__name__)
-
-__version__ = "2021.04.06"
 
 if not Var.API_ID or not Var.API_HASH:
     wr("No API_ID or API_HASH found. CɪᴘʜᴇʀX Bot Quiting...")
