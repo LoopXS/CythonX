@@ -380,7 +380,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
     media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
     body = {
         "title": file_name,
-        "description": "Uploaded using CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ...",
+        "description": "Uploaded using CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ",
         "mimeType": mime_type,
     }
     if parent_id is not None:
@@ -477,7 +477,7 @@ def un_plug(shortname):
 
 async def dler(ev, opts, url):
     try:
-        await ev.edit("`Fetching data, please wait..`")
+        await ev.edit("`Fetching data, please wait...`")
         with YoutubeDL(opts) as ytdl:
             ytdl_data = ytdl.extract_info(url)
     except DownloadError as DE:
@@ -892,7 +892,7 @@ async def fetch_info(chat, event):
         for bot in bots_list:
             bots += 1
 
-    caption = "<b>CHAT INFOby CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ:</b>\n"
+    caption = "<b>Chat Info by CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ:</b>\n"
     caption += f"ID: <code>{chat_obj_info.id}</code>\n"
     if chat_title is not None:
         caption += f"{chat_type} name: {chat_title}\n"
