@@ -72,7 +72,7 @@ LOGS.info(
 )
 
 ultroid_bot.asst = None
-LOGS.info("Initialising...")
+LOGS.info("Initializing...")
 LOGS.info(f"CythonX Version - {ver}")
 LOGS.info(f"Telethon Version - {vers}")
 LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.5")
@@ -220,7 +220,7 @@ async def semxy():
     try:
         xx = await ultroid_bot.get_entity(Var.BOT_USERNAME)
         if xx.photo is None:
-            LOGS.info("Customizing your Assistant Bot in @BOTFATHER")
+            LOGS.info("Customising your Assistant Bot in @BOTFATHER")
             RD = Var.BOT_USERNAME
             if RD.startswith("@"):
                 UL = RD
@@ -260,15 +260,15 @@ async def semxy():
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
                 "botfather",
-                f"✨PowerFull CɪᴘʜᴇʀX Bot Assistant Bot✨\n✨Master ~ {sir} ✨\n\n✨Powered By ~ CɪᴘʜᴇʀX ✨",
+                f"✨PowerFull CɪᴘʜᴇʀX Assistant Bot✨\n✨Master ~ {sir} ✨\n\n✨Powered By ~ CɪᴘʜᴇʀX✨",
             )
             await asyncio.sleep(2)
             await ultroid_bot.send_message("botfather", "/start")
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
-                Var.LOG_CHANNEL, "**Auto Customisation** Done at @BotFather"
+                Var.LOG_CHANNEL, "**Auto Customization** Done at @BotFather"
             )
-            LOGS.info("Customisation Done")
+            LOGS.info("Customization Done")
     except Exception as e:
         LOGS.warning(str(e))
 
