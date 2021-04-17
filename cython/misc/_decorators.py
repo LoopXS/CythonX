@@ -143,51 +143,43 @@ def ultroid_cmd(allow_sudo=on, **args):
                 LOGS.exception(e)
                 date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-                    text = """
-**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Error Report**
-"""
+                text = "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Error Report**\n"
+                ftext = "\nDisclaimer:\nThis file uploaded ONLY here, "
+                ftext += "we logged only fact of error and date, "
+                ftext += "we respect your privacy, "
+                ftext += "you may not report this error if you've "
+                ftext += "any confidential data here, no one will see your data "
+                ftext += "if you choose not to do so.\n\n"
+                ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
+                ftext += "\nDate: " + date
+                ftext += "\nGroup ID: " + str(ult.chat_id)
+                ftext += "\nSender ID: " + str(ult.sender_id)
+                ftext += "\n\nEvent Trigger:\n"
+                ftext += str(ult.text)
+                ftext += "\n\nTraceback info:\n"
+                ftext += str(format_exc())
+                ftext += "\n\nError text:\n"
+                ftext += str(sys.exc_info()[1])
+                ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
 
-                    ftext = "\nDisclaimer:\nThis file uploaded ONLY here, "
-                    ftext += "we logged only fact of error and date, "
-                    ftext += "we respect your privacy, "
-                    ftext += "you may not report this error if you've "
-                    ftext += "any confidential data here, no one will see your data "
-                    ftext += "if you choose not to do so.\n\n"
-                    ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
-                    ftext += "\nDate: " + date
-                    ftext += "\nGroup ID: " + str(ult.chat_id)
-                    ftext += "\nSender ID: " + str(ult.sender_id)
-                    ftext += "\n\nEvent Trigger:\n"
-                    ftext += str(ult.text)
-                    ftext += "\n\nTraceback info:\n"
-                    ftext += str(format_exc())
-                    ftext += "\n\nError text:\n"
-                    ftext += str(sys.exc_info()[1])
-                    ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
-
-                    file = open("cipherx.txt", "w+")
-                    file.write(ftext)
-                    file.close()
-                    key = (
-                        requests.post(
-                            "https://nekobin.com/api/documents", json={"content": ftext}
-                        )
-                        .json()
-                        .get("result")
-                        .get("key")
-                    )
-                    url = f"https://nekobin.com/{key}"
-                    text += f"\nPasted [here]({url}) too."
-                    if Var.LOG_CHANNEL:
-                        Placetosend = Var.LOG_CHANNEL
-                    else:
-                        Placetosend = ultroid_bot.uid
-                    await ultroid_bot.asst.send_file(
-                        Placetosend,
-                        "cipherx.txt",
-                        caption=text,
-                    )
-                    remove("cipherx.txt")
+                file = open("cipherx.txt", "w+")
+                file.write(ftext)
+                file.close()
+                key = requests.post(
+                    "https://nekobin.com/api/documents", json={"content": ftext}
+                ).json()["result"]["key"]
+                url = f"https://nekobin.com/{key}"
+                text += f"\nPasted [here]({url}) too."
+                if Var.LOG_CHANNEL:
+                    Placetosend = Var.LOG_CHANNEL
+                else:
+                    Placetosend = ultroid_bot.uid
+                await ultroid_bot.asst.send_file(
+                    Placetosend,
+                    "cipherx.txt",
+                    caption=text,
+                )
+                remove("cipherx.txt")
 
         ultroid_bot.add_event_handler(wrapper, events.NewMessage(**args))
         try:
