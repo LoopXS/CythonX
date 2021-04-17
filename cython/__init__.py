@@ -59,6 +59,8 @@ try:
     else:
         udB.set("HNDLR", ".")
         HNDLR = udB.get("HNDLR")
+    if not udB.get("SUDO"):
+        udB.set("SUDO", "False")
 except BaseException:
     pass
 
