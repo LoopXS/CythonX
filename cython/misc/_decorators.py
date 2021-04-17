@@ -118,7 +118,7 @@ def ultroid_cmd(allow_sudo=on, **args):
             if groups_only and ult.is_private:
                 return await eod(ult, "`Use this in group/channel.`", time=3)
             if admins_only and not chat.admin_rights:
-                return await eod(ult, "`I am not an admin.`", time=3)
+                return await eod(ult, "`I'm not an admin.`", time=3)
             try:
                 await func(ult)
             except MessageIdInvalidError:
