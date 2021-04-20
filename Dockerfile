@@ -1,2 +1,2 @@
-FROM python:3.9.2
+FROM python:3.9.4
 CMD ["bash","CythonX.sh"]
