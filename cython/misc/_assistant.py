@@ -15,10 +15,10 @@ OWNER_ID = ultroid_bot.me.id
 ULTROID_PIC = "https://telegra.ph/file/167a0b85048b04129bd3b.jpg"
 MSG = f"""
 **CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ**
-➖➖➖➖➖➖➖➖➖➖
+✵✵✵✵✵✵✵✵✵✵✵✵✵✵
 **Owner**: [{get_display_name(ultroid_bot.me)}](tg://user?id={ultroid_bot.me.id})
 **✨ CɪᴘʜᴇʀX is the best ✨**
-➖➖➖➖➖➖➖➖➖➖
+✵✵✵✵✵✵✵✵✵✵✵✵✵✵
 """
 
 # decorator for assistant
@@ -43,7 +43,7 @@ def inline_owner():
                         text=MSG,
                         thumb=InputWebDocument(ULTROID_PIC, 0, "image/jpeg", []),
                         buttons=[
-                            [Button.url("CɪᴘʜᴇʀX inbox", url="https://t.me/Hackintush")]
+                            [Button.url("✵ CɪᴘʜᴇʀX Ⲃⲟⲧ ✵", url="https://t.me/CipherXBot")]
                         ]
                     )
                     await event.answer(
