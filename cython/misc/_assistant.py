@@ -14,9 +14,9 @@ OWNER_NAME = ultroid_bot.me.first_name
 OWNER_ID = ultroid_bot.me.id
 ULTROID_PIC = "https://telegra.ph/file/167a0b85048b04129bd3b.jpg"
 MSG = f"""
-**CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ**
+**⚜️ CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ ⚜️**
 ✵✵✵✵✵✵✵✵✵✵✵✵✵✵
-**Owner**: [{get_display_name(ultroid_bot.me)}](tg://user?id={ultroid_bot.me.id})
+**Owner**: CɪᴘʜᴇʀX
 **✨ CɪᴘʜᴇʀX is the best ✨**
 ✵✵✵✵✵✵✵✵✵✵✵✵✵✵
 """
