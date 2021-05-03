@@ -13,6 +13,7 @@ from cython.misc._decorators import *
 from cython.misc._wrappers import *
 
 from .. import *
+from .. import ultroid_bot as cipherxbot
 from ..dB.core import *
 from ..dB.database import Var
 from ..functions.sudos import *
