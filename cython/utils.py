@@ -35,6 +35,7 @@ def load_plugins(plugin_name):
             owner,
         )
         from .misc._decorators import ultroid_cmd
+        from .misc._decorators import cipherxcmd
         from .misc._wrappers import eod, eor
 
         path = Path(f"plugins/{plugin_name}.py")
@@ -42,12 +43,16 @@ def load_plugins(plugin_name):
         spec = importlib.util.spec_from_file_location(name, path)
         mod = importlib.util.module_from_spec(spec)
         mod.asst = ultroid_bot.asst
+        mod.asst = cipherxbot.asst
         mod.tgbot = ultroid_bot.asst
+        mod.tgbot = cipherxbot.asst
         mod.ultroid_bot = ultroid_bot
         mod.ultroid_bot = cipherxbot
+        mod.cipherxbot = cipherxbot
         mod.bot = ultroid_bot
         mod.bot = cipherxbot
         mod.ultroid = ultroid_bot
+        mod.ultroid = cipherxbot
         mod.owner = owner()
         mod.in_owner = inline_owner()
         mod.inline = inline()
@@ -62,7 +67,10 @@ def load_plugins(plugin_name):
         mod.edit_or_reply = eor
         mod.asst_cmd = asst_cmd
         mod.ultroid_cmd = ultroid_cmd
+        mod.ultroid_cmd = cipherxcmd
+        mod.cipherxcmd = cipherxcmd
         mod.on_cmd = ultroid_cmd
+        mod.on_cmd = cipherxcmd
         mod.callback = callback
         mod.Redis = udB.get
         sys.modules["support"] = xxx
@@ -113,6 +121,7 @@ def load_addons(plugin_name):
             owner,
         )
         from .misc._decorators import ultroid_cmd
+        from .misc._decorators import cipherxcmd
         from .misc._supporter import Config, admin_cmd, sudo_cmd
         from .misc._wrappers import eod, eor
 
@@ -121,12 +130,18 @@ def load_addons(plugin_name):
         spec = importlib.util.spec_from_file_location(name, path)
         mod = importlib.util.module_from_spec(spec)
         mod.asst = ultroid_bot.asst
+        mod.asst = cipherxbot.asst
         mod.tgbot = ultroid_bot.asst
+        mod.tgbot = cipherxbot.asst
         mod.ultroid_bot = ultroid_bot
+        mod.ultroid_bot = cipherxbot
+        mod.cipherxbot = cipherxbot
         mod.ub = ultroid_bot
+        mod.ub = cipherxbot
         mod.bot = ultroid_bot
         mod.bot = cipherxbot
         mod.ultroid = ultroid_bot
+        mod.ultroid = cipherxbot
         mod.borg = ultroid_bot
         mod.borg = cipherxbot
         mod.telebot = ultroid_bot
@@ -152,7 +167,9 @@ def load_addons(plugin_name):
         mod.edit_or_reply = eor
         mod.asst_cmd = asst_cmd
         mod.ultroid_cmd = ultroid_cmd
+        mod.ultroid_cmd = cipherxcmd
         mod.on_cmd = ultroid_cmd
+        mod.on_cmd = cipherxcmd
         mod.callback = callback
         mod.Redis = udB.get
         mod.admin_cmd = admin_cmd
@@ -216,11 +233,15 @@ def load_assistant(plugin_name):
         mod = importlib.util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
         mod.ultroid_bot = cipherxbot
+        mod.cipherxbot = cipherxbot
         mod.ultroid = ultroid_bot
+        mod.ultroid = cipherxbot
         mod.Redis = udB.get
         mod.udB = udB
         mod.bot = ultroid_bot
+        mod.bot = cipherxbot
         mod.asst = ultroid_bot.asst
+        mod.asst = cipherxbot.asst
         mod.owner = owner()
         mod.in_pattern = in_pattern
         mod.in_owner = inline_owner()
@@ -264,11 +285,16 @@ def load_pmbot(plugin_name):
         spec = importlib.util.spec_from_file_location(name, path)
         mod = importlib.util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
+        mod.ultroid_bot = cipherxbot
+        mod.cipherxbot = cipherxbot
         mod.ultroid = ultroid_bot
+        mod.ultroid = cipherxbot
         mod.bot = ultroid_bot
+        mod.bot = cipherxbot
         mod.Redis = udB.get
         mod.udB = udB
         mod.asst = ultroid_bot.asst
+        mod.asst = cipherxbot.asst
         mod.owner = owner()
         mod.eod = eod
         mod.eor = eor
