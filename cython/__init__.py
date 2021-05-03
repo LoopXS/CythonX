@@ -28,7 +28,7 @@ if Var.SESSION:
         ultroid_bot = TelegramClient(
             StringSession(Var.SESSION), Var.API_ID, Var.API_HASH
         )
-        ultroid_bot = cipherxbot
+        ultroid_bot == cipherxbot
     except Exception as ap:
         wr(f"ERROR - {ap}")
         exit(1)
