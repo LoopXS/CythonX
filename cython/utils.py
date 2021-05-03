@@ -43,7 +43,9 @@ def load_plugins(plugin_name):
         mod.asst = ultroid_bot.asst
         mod.tgbot = ultroid_bot.asst
         mod.ultroid_bot = ultroid_bot
+        mod.ultroid_bot = cipherxbot
         mod.bot = ultroid_bot
+        mod.bot = cipherxbot
         mod.ultroid = ultroid_bot
         mod.owner = owner()
         mod.in_owner = inline_owner()
@@ -121,11 +123,16 @@ def load_addons(plugin_name):
         mod.ultroid_bot = ultroid_bot
         mod.ub = ultroid_bot
         mod.bot = ultroid_bot
+        mod.bot = cipherxbot
         mod.ultroid = ultroid_bot
         mod.borg = ultroid_bot
+        mod.borg = cipherxbot
         mod.telebot = ultroid_bot
+        mod.telebot = cipherxbot
         mod.jarvis = ultroid_bot
+        mod.jarvis = cipherxbot
         mod.friday = ultroid_bot
+        mod.friday = cipherxbot
         mod.owner = owner()
         mod.in_owner = inline_owner()
         mod.inline = inline()
@@ -205,6 +212,7 @@ def load_assistant(plugin_name):
         spec = importlib.util.spec_from_file_location(name, path)
         mod = importlib.util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
+        mod.ultroid_bot = cipherxbot
         mod.ultroid = ultroid_bot
         mod.Redis = udB.get
         mod.udB = udB
