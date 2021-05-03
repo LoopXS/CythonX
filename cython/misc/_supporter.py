@@ -32,6 +32,10 @@ bot = ultroid_bot
 borg = ultroid_bot
 friday = ultroid_bot
 jarvis = ultroid_bot
+bot = cipherxbot
+borg = cipherxbot
+friday = cipherxbot
+jarvis = cipherxbot
 
 ok = udB.get("SUDOS")
 if ok:
@@ -93,7 +97,10 @@ friday_on_cmd = admin_cmd
 j_cmd = admin_cmd
 command = ultroid_cmd
 register = ultroid_cmd
-
+friday_on_cmd = cipherxbot
+j_cmd = cipherxbot
+command = cipherxbot
+register = cipherxbot
 
 def sudo_cmd(allow_sudo=True, pattern=None, command=None, **args):
     args["func"] = lambda e: e.via_bot_id is None
