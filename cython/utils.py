@@ -47,6 +47,7 @@ def load_plugins(plugin_name):
         mod.tgbot = ultroid_bot.asst
         mod.tgbot = cipherxbot.asst
         mod.ultroid_bot = ultroid_bot
+        mod.cipherxbot = cipherxbot
         mod.ultroid_bot = cipherxbot
         mod.bot = ultroid_bot
         mod.bot = cipherxbot
@@ -133,6 +134,8 @@ def load_addons(plugin_name):
         mod.tgbot = ultroid_bot.asst
         mod.tgbot = cipherxbot.asst
         mod.ultroid_bot = ultroid_bot
+        mod.cipherxbot = cipherxbot
+        mod.cipherxbot = cipherxbot
         mod.ultroid_bot = cipherxbot
         mod.ub = ultroid_bot
         mod.ub = cipherxbot
@@ -230,6 +233,7 @@ def load_assistant(plugin_name):
         spec = importlib.util.spec_from_file_location(name, path)
         mod = importlib.util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
+        mod.cipherxbot = cipherxbot
         mod.ultroid_bot = cipherxbot
         mod.ultroid = ultroid_bot
         mod.ultroid = cipherxbot
@@ -282,6 +286,7 @@ def load_pmbot(plugin_name):
         spec = importlib.util.spec_from_file_location(name, path)
         mod = importlib.util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
+        mod.cipherxbot = cipherxbot
         mod.ultroid_bot = cipherxbot
         mod.ultroid = ultroid_bot
         mod.ultroid = cipherxbot
