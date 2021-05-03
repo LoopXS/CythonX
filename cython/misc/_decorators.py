@@ -110,6 +110,68 @@ def ultroid_cmd(allow_sudo=on, **args):
         del args["groups_only"]
     # check if the plugin should listen for outgoing 'messages'
 
+def cipherxcmd(allow_sudo=on, **args):
+    args["func"] = lambda e: e.via_bot_id is None
+    stack = inspect.stack()
+    previous_stack_frame = stack[1]
+    file_test = Path(previous_stack_frame.filename)
+    file_test = file_test.stem.replace(".py", "")
+    pattern = args["pattern"]
+    groups_only = args.get("groups_only", False)
+    admins_only = args.get("admins_only", False)
+    args["outgoing"] = True
+
+    if allow_sudo == "True":
+        args["from_users"] = sed
+        args["incoming"] = True
+
+    else:
+        args["outgoing"] = True
+
+    if pattern is not None:
+        if pattern.startswith(r"\#"):
+            args["pattern"] = re.compile(pattern)
+        else:
+            args["pattern"] = re.compile(hndlr + pattern)
+        reg = re.compile("(.*)")
+        try:
+            cmd = re.search(reg, pattern)
+            try:
+                cmd = (
+                    cmd.group(1)
+                    .replace("$", "")
+                    .replace("?(.*)", "")
+                    .replace("(.*)", "")
+                    .replace("(?: |)", "")
+                    .replace("| ", "")
+                    .replace("( |)", "")
+                    .replace("?((.|//)*)", "")
+                    .replace("?P<shortname>\\w+", "")
+                )
+            except BaseException:
+                pass
+            try:
+                LIST[file_test].append(cmd)
+            except BaseException:
+                LIST.update({file_test: [cmd]})
+        except BaseException:
+            pass
+    args["blacklist_chats"] = True
+    black_list_chats = list(Var.BLACKLIST_CHAT)
+    if len(black_list_chats) > 0:
+        args["chats"] = black_list_chats
+
+    # check if the plugin should allow edited updates
+    if "allow_edited_updates" in args and args["allow_edited_updates"]:
+        args["allow_edited_updates"]
+        del args["allow_edited_updates"]
+    if "admins_only" in args:
+        del args["admins_only"]
+    if "groups_only" in args:
+        del args["groups_only"]
+    # check if the plugin should listen for outgoing 'messages'
+
+
     def decorator(func):
         async def wrapper(ult):
             chat = await ult.get_chat()
