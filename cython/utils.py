@@ -22,7 +22,7 @@ def load_plugins(plugin_name):
         import sys
         from pathlib import Path
 
-        from . import HNDLR, LOGS, udB, ultroid_bot
+        from . import HNDLR, LOGS, udB, ultroid_bot, cipherxbot
         from .dB.database import Var
         from .misc import _supporter as xxx
         from .misc._assistant import (
@@ -99,7 +99,7 @@ def load_addons(plugin_name):
         import sys
         from pathlib import Path
 
-        from . import HNDLR, LOGS, udB, ultroid_bot
+        from . import HNDLR, LOGS, udB, ultroid_bot, cipherxbot
         from .dB.database import Var
         from .misc import _supporter as xxx
         from .misc._assistant import (
@@ -203,7 +203,7 @@ def load_assistant(plugin_name):
         import sys
         from pathlib import Path
 
-        from . import HNDLR, udB, ultroid_bot
+        from . import HNDLR, udB, ultroid_bot, cipherxbot
         from .misc._assistant import asst_cmd, callback, in_pattern, inline_owner, owner
         from .misc._wrappers import eod, eor
 
@@ -251,7 +251,7 @@ def load_pmbot(plugin_name):
         import sys
         from pathlib import Path
 
-        from . import HNDLR, udB, ultroid_bot
+        from . import HNDLR, udB, ultroid_bot, cipherxbot
         from .misc._assistant import asst_cmd, callback, owner
         from .misc._wrappers import eod, eor
 
