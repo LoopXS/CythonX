@@ -1,4 +1,4 @@
-from .. import udB
+from .. import BOT_MODE, udB, ultroid_bot
 
 
 def str_to_list(text):  # Returns List
@@ -48,6 +48,8 @@ def add_sudo(id):  # Take int or str with numbers only , Returns Boolean
         sudos.append(id)
         udB.set("SUDOS", list_to_str(sudos))
         return True
+        if str(BOT_MODE) == "True":
+            sudos.append(udB.get("OWNER_ID"))
     except Exception as e:
         print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/sudos/add_sudo : {e}")
         return False
@@ -65,3 +67,19 @@ def del_sudo(id):  # Take int or str with numbers only , Returns Boolean
     except Exception as e:
         print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/sudos/del_sudo : {e}")
         return False
+
+
+def is_fullsudo(id):
+    if str(BOT_MODE) == "True":
+        if id == int(udB.get("OWNER_ID")):
+            return True
+    else:
+        if id == ultroid_bot.uid:
+            return True
+    id = str(id)
+    x = udB.get("FULLSUDO")
+    if x:
+        if id in x:
+            return True
+        return
+    return
