@@ -329,7 +329,7 @@ async def hehe():
                     LOGS.warning("WRONG CHANNEL/GROUP ID in LOG_CHANNEL Var")
                 except BaseException as ep:
                     LOGS.info(ep)
-            MSG = f"**Ultroid has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+            MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
             BTTS = None
             updava = await AreUpdatesAvailable()
             if updava:
@@ -337,7 +337,7 @@ async def hehe():
             await ultroid_bot.asst.send_message(Var.LOG_CHANNEL, MSG, buttons=BTTS)
         except BaseException:
             try:
-                MSG = f"**Ultroid has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+                MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
                 await ultroid_bot.send_message(Var.LOG_CHANNEL, MSG)
             except PeerIdInvalidError:
                 LOGS.warning("WRONG CHANNEL/GROUP ID in LOG_CHANNEL Var")
