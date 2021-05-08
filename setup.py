@@ -14,7 +14,6 @@ setuptools.setup(
     name=name,
     version=version,
     author=author,
-    author_email=author_email,
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
