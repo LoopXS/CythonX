@@ -1,112 +1,79 @@
 from .. import udB
 
 
-def list_to_str(list):  # Returns String
-    str = ""
+def lss(list):
+    z = 0
+    xx = ""
     for x in list:
-        str += f"{x} "
-    return str.strip()
-
-
-def str_to_list(text):  # Returns List
-    return text.split(" ")
-
-
-def ls(list):
-    str = ""
-    for x in list:
-        str += f"{x} |||"
-    return str.strip()
-
-
-def get_all_stuff():  # Returns List
-    fills = udB.get("BLACKLIST")
-    if fills is None or fills == "":
-        return [""]
-    else:
-        return str_to_list(fills)
-
-
-def get_reply(chat, word):
-    masala = udB.get("BLACKLIST")
-    if not masala:
-        return
-    x = masala.split("|||")
-    for i in x:
-        x = i.split("$|")
-        try:
-            if str(x[0]) == str(chat) and str(x[1]).lower() == str(word).lower():
-                return x[1]
-        except BaseException:
-            pass
-    return None
-
-
-def list_blacklist(chat):
-    fl = udB.get("BLACKLIST")
-    if not fl:
-        return None
-    rt = fl.split("|||")
-    tata = ""
-    tar = 0
-    for on in rt:
-        er = on.split("$|")
-        if str(er[0]) == str(chat):
-            tata += f"👉 {er[1]}\n"
-            tar += 1
-    if tar == 0:
-        return None
-    return tata
+        z += 1
+        if z == len(list):
+            xx += x
+        else:
+            xx += f"{x}$|"
+    return xx
 
 
 def get_blacklist(chat):
-    fl = udB.get("BLACKLIST")
+    fl = udB.get("BLACKLISTS")
     if not fl:
         return None
-    rt = fl.split("|||")
-    tata = ""
-    tar = 0
-    for on in rt:
-        er = on.split("$|")
-        if str(er[0]) == str(chat):
-            tata += f"{er[1]} "
-            tar += 1
-    if tar == 0:
+    y = eval(fl)
+    if y.get(chat):
+        return y.get(chat)
+    return
+
+
+def list_blacklist(chat):
+    fl = udB.get("BLACKLISTS")
+    if not fl:
         return None
-    return tata
+    y = eval(fl)
+    if y.get(chat):
+        allword = (y.get(chat)).split("$|")
+        g = ""
+        for z in allword:
+            g += f"👉`{z}`\n"
+        if g:
+            return g
+    return
 
 
 def add_blacklist(chat, word):
     try:
-        dumb_masala = get_all_stuff()
-        the_thing = f"|||{chat}$|{word}"
-        rt = udB.get("BLACKLIST")
+        ok = str({chat: word})
+        rt = udB.get("BLACKLISTS")
         if not rt:
-            the_thing = f"{chat}$|{word}"
-        dumb_masala.append(the_thing)
-        udB.set("BLACKLIST", list_to_str(dumb_masala))
-        return True
+            udB.set("BLACKLISTS", ok)
+        else:
+            y = eval(rt)
+            if y.get(chat):
+                allword = (y.get(chat)).split("$|")
+                for z in allword:
+                    if word != z:
+                        allword.append(word)
+                aword = lss(allword)
+                y.pop(chat)
+                y.update({chat: aword})
+            else:
+                y.update({chat: word})
+            udB.set("BLACKLISTS", str(y))
+            return True
     except Exception as e:
         print(e)
         return False
 
 
 def rem_blacklist(chat, word):
-    try:
-        d = list_to_str(get_all_stuff())
-        x = d.split("|||")
-        the_thing = f"{chat}$| {word} "
-        the_thing2 = f"{chat}$| {word}"
-        try:
-            x.remove(the_thing)
-            x.remove(the_thing2)
-        except BaseException:
-            pass
-        if len(x) < 2:
-            udB.set("BLACKLIST", list_to_str(x))
-        else:
-            udB.set("BLACKLIST", ls(x))
-        return True
-    except Exception as e:
-        print(e)
-        return False
+    masala = udB.get("BLACKLISTS")
+    if not masala:
+        return
+    y = eval(masala)
+    if y.get(chat):
+        allword = (y.get(chat)).split("$|")
+        for z in allword:
+            if word == z:
+                allword.remove(word)
+        aword = lss(allword)
+        y.pop(chat)
+        y.update({chat: aword})
+    return udB.set("BLACKLISTS", str(y))
