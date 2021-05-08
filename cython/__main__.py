@@ -2,22 +2,22 @@ import asyncio
 import glob
 import logging
 import os
+import traceback
 from pathlib import Path
 
 import telethon.utils
 from telethon import TelegramClient
 from telethon import __version__ as vers
-from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
-from telethon.tl.functions.channels import JoinChannelRequest
+from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError, PeerIdInvalidError
+from telethon.tl.custom import Button
+from telethon.tl.functions.channels import InviteToChannelRequest, JoinChannelRequest
+from telethon.tl.functions.messages import AddChatUserRequest
 from telethon.tl.types import InputMessagesFilterDocument
 
 from . import *
+from .functions.all import AreUpdatesAvailable
 from .utils import *
 from .version import __version__ as ver
-
-# logging.basicConfig(filename="cipherx.log", filemode="w",
-#    format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s", level=logging.INFO
-# )
 
 # remove the old logs file.
 if os.path.exists("cipherx.log"):
@@ -56,11 +56,23 @@ async def istart(ult):
     ultroid_bot.me = await ultroid_bot.get_me()
     ultroid_bot.uid = telethon.utils.get_peer_id(ultroid_bot.me)
     ultroid_bot.first_name = ultroid_bot.me.first_name
+    if not ultroid_bot.me.bot:
+        udB.set("OWNER_ID", ultroid_bot.uid)
+    if str(BOT_MODE) == "True":
+        OWNER = await ultroid_bot.get_entity(int(udB.get("OWNER_ID")))
+        ultroid_bot.me = OWNER
+        asst.me = OWNER
+        ultroid_bot.uid = OWNER.id
+        ultroid_bot.first_name = OWNER.first_name
 
 
-async def bot_info(BOT_TOKEN):
-    asstinfo = await asst.get_me()
-    asstinfo.username
+ultroid_bot.asst = None
+
+
+async def bot_info(botasst):
+    await botasst.start()
+    botasst.me = await botasst.get_me()
+    return botasst.me
 
 
 LOGS.info(
@@ -71,34 +83,57 @@ LOGS.info(
 """
 )
 
-ultroid_bot.asst = None
+
 LOGS.info("Initializing...")
 LOGS.info(f"CythonX Version - {ver}")
 LOGS.info(f"Telethon Version - {vers}")
-LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.5")
+LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.6")
 
+if str(BOT_MODE) == "True":
+    mode = "Bot Mode - Started"
+else:
+    mode = "User Mode - Started"
+
+# log in
 if Var.BOT_TOKEN:
     LOGS.info("Starting CɪᴘʜᴇʀX Bot...")
     try:
         ultroid_bot.asst = TelegramClient(
             None, api_id=Var.API_ID, api_hash=Var.API_HASH
         ).start(bot_token=Var.BOT_TOKEN)
-        ultroid_bot.loop.run_until_complete(istart(Var.BOT_USERNAME))
-        LOGS.info("User Mode - Done")
+        asst = ultroid_bot.asst
+        ultroid_bot.loop.run_until_complete(istart(asst))
+        ultroid_bot.loop.run_until_complete(bot_info(asst))
         LOGS.info("Done, startup completed")
+        LOGS.info(mode)
     except AuthKeyDuplicatedError:
         LOGS.info(
             "Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping..."
         )
         exit(1)
-    except BaseException as e:
-        LOGS.info("Error: " + str(e))
+    except BaseException:
+        LOGS.info("Error: " + str(traceback.print_exc()))
         exit(1)
 else:
-    LOGS.info("Starting User Mode...")
+    LOGS.info(mode)
     ultroid_bot.start()
 
-udB.set("OWNER_ID", ultroid_bot.uid)
+BOTINVALID_PLUGINS = [
+    "globaltools",
+    "autopic",
+    "pmpermit",
+    "fedutils",
+    "_tagnotifs",
+    "webupload",
+    "clone",
+    "inlinefun",
+    "tscan",
+    "animedb",
+    "limited",
+    "quotly",
+    "findsong",
+    "sticklet",
+]
 
 # for userbot
 path = "plugins/*.py"
@@ -108,9 +143,14 @@ for name in files:
         patt = Path(a.name)
         plugin_name = patt.stem
         try:
-            load_plugins(plugin_name.replace(".py", ""))
-            if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                LOGS.info(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
+            if str(BOT_MODE) == "True" and plugin_name in BOTINVALID_PLUGINS:
+                LOGS.info(
+                    f"CɪᴘʜᴇʀX Bot - Official - BOT_MODE_INVALID_PLUGIN - {plugin_name}"
+                )
+            else:
+                load_plugins(plugin_name.replace(".py", ""))
+                if not plugin_name.startswith("__") or plugin_name.startswith("_"):
+                    LOGS.info(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
         except Exception as e:
             LOGS.info(f"CɪᴘʜᴇʀX Bot - Official - ERROR - {plugin_name}")
             LOGS.info(str(e))
@@ -119,9 +159,12 @@ for name in files:
 # for addons
 addons = udB.get("ADDONS")
 if addons == "True" or addons is None:
-    os.system("git clone https://github.com/CipherX1-ops/Megatron-addons.git ./addons/")
-    LOGS.info("Installing packages for addons")
-    os.system("pip install -r ./addons/addons.txt")
+    try:
+        os.system("git clone https://github.com/CipherX1-ops/Megatron-addons.git addons/")
+    except BaseException:
+        pass
+    LOGS.info("Installing packages for addons...")
+    os.system("pip install -r addons/addons.txt")
     path = "addons/*.py"
     files = glob.glob(path)
     for name in files:
@@ -129,9 +172,14 @@ if addons == "True" or addons is None:
             patt = Path(a.name)
             plugin_name = patt.stem
             try:
-                load_addons(plugin_name.replace(".py", ""))
-                if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                    LOGS.info(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
+                if str(BOT_MODE) == "True" and plugin_name in BOTINVALID_PLUGINS:
+                    LOGS.info(
+                        f"CɪᴘʜᴇʀX Bot - Addons - BOT_MODE_INVALID_PLUGIN - {plugin_name}"
+                    )
+                else:
+                    load_addons(plugin_name.replace(".py", ""))
+                    if not plugin_name.startswith("__") or plugin_name.startswith("_"):
+                        LOGS.info(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
             except Exception as e:
                 LOGS.warning(f"CɪᴘʜᴇʀX Bot - Addons - ERROR - {plugin_name}")
                 LOGS.warning(str(e))
@@ -159,46 +207,33 @@ Plug_channel = udB.get("PLUGIN_CHANNEL")
 if Plug_channel:
 
     async def plug():
+        if str(BOT_MODE) == "True":
+            LOGS.info("PLUGIN_CHANNEL Can't be used in BOT_MODE")
+            return
         try:
-            try:
-                if not Plug_channel.startswith("/"):
-                    chat = int(Plug_channel)
-                else:
-                    return
-            except BaseException:
-                if Plug_channel.startswith("@"):
-                    chat = Plug_channel
-                else:
-                    return
-            plugins = await ultroid_bot.get_messages(
-                chat,
-                None,
-                search=".py",
-                filter=InputMessagesFilterDocument,
-            )
-            total = int(plugins.total)
-            totals = range(0, total)
-            for ult in totals:
-                uid = plugins[ult].id
-                file = await ultroid_bot.download_media(
-                    await ultroid_bot.get_messages(chat, ids=uid), "./addons/"
-                )
-                if "(" not in file:
-                    upath = Path(file)
-                    name = upath.stem
+            if Plug_channel.isdigit():
+                chat = int(Plug_channel)
+            elif Plug_channel.startswith("@"):
+                chat = Plug_channel
+            else:
+                return
+            async for x in ultroid_bot.iter_messages(
+                chat, search=".py", filter=InputMessagesFilterDocument
+            ):
+                await asyncio.sleep(0.6)
+                files = await ultroid_bot.download_media(x.media, "./addons/")
+                file = Path(files)
+                plugin = file.stem
+                if "(" not in files:
                     try:
-                        load_addons(name.replace(".py", ""))
-                        LOGS.info(
-                            f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - Installed - {(os.path.basename(file))}"
-                        )
+                        load_addons(plugin.replace(".py", ""))
+                        LOGS.info(f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - Installed - {plugin}")
                     except Exception as e:
-                        LOGS.warning(
-                            f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - ERROR - {(os.path.basename(file))}"
-                        )
+                        LOGS.warning(f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - ERROR - {plugin}")
                         LOGS.warning(str(e))
                 else:
-                    LOGS.info(f"Plugin {(os.path.basename(file))} is Pre Installed")
-                    os.remove(file)
+                    LOGS.info(f"Plugin {plugin} is Pre Installed")
+                    os.remove(files)
         except Exception as e:
             LOGS.warning(str(e))
 
@@ -215,23 +250,21 @@ if pmbot == "True":
             load_pmbot(plugin_name.replace(".py", ""))
     LOGS.info(f"CɪᴘʜᴇʀX Bot - PM Bot Message Forwards - Enabled.")
 
+# customize assistant
+
 
 async def semxy():
     try:
-        xx = await ultroid_bot.get_entity(Var.BOT_USERNAME)
+        xx = await ultroid_bot.get_entity(asst.me.username)
         if xx.photo is None:
-            LOGS.info("Customising your Assistant Bot in @BOTFATHER")
-            RD = Var.BOT_USERNAME
-            if RD.startswith("@"):
-                UL = RD
-            else:
-                UL = f"@{RD}"
+            LOGS.info("Customizing your Assistant Bot in @BOTFATHER")
+            UL = f"@{asst.me.username}"
             if (ultroid_bot.me.username) is None:
                 sir = ultroid_bot.me.first_name
             else:
                 sir = f"@{ultroid_bot.me.username}"
             await ultroid_bot.send_message(
-                Var.LOG_CHANNEL, "Auto Customisation Started on @botfather"
+                Var.LOG_CHANNEL, "Auto Customization Started on @botfather"
             )
             await asyncio.sleep(1)
             await ultroid_bot.send_message("botfather", "/cancel")
@@ -273,36 +306,53 @@ async def semxy():
         LOGS.warning(str(e))
 
 
+# some stuffs
 async def hehe():
     if Var.LOG_CHANNEL:
         try:
-            RD = Var.BOT_USERNAME
-            if RD.startswith("@"):
-                UL = RD
-            else:
-                UL = f"@{RD}"
-            await ultroid_bot.asst.send_message(
-                Var.LOG_CHANNEL,
-                f"**CɪᴘʜᴇʀX Bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: {UL}\n➖➖➖➖➖➖➖➖➖\n**Support**: CɪᴘʜᴇʀX Bot\n➖➖➖➖➖➖➖➖➖",
-            )
-        except BaseException:
             try:
-                await ultroid_bot.send_message(
-                    Var.LOG_CHANNEL,
-                    f"**CɪᴘʜᴇʀX Bot has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: {UL}\n➖➖➖➖➖➖➖➖➖\n***Support**: CɪᴘʜᴇʀX Bot\n➖➖➖➖➖➖➖➖➖",
+                await ultroid_bot(
+                    AddChatUserRequest(
+                        chat_id=Var.LOG_CHANNEL,
+                        user_id=asst.me.username,
+                        fwd_limit=10,
+                    ),
                 )
             except BaseException:
-                pass
+                try:
+                    await ultroid_bot(
+                        InviteToChannelRequest(
+                            channel=Var.LOG_CHANNEL, users=[asst.me.username]
+                        )
+                    )
+                except PeerIdInvalidError:
+                    LOGS.warning("WRONG CHANNEL/GROUP ID in LOG_CHANNEL Var")
+                except BaseException as ep:
+                    LOGS.info(ep)
+            MSG = f"**Ultroid has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+            BTTS = None
+            updava = await AreUpdatesAvailable()
+            if updava:
+                BTTS = [[Button.inline(text="Update Available", data="updtavail")]]
+            await ultroid_bot.asst.send_message(Var.LOG_CHANNEL, MSG, buttons=BTTS)
+        except BaseException:
+            try:
+                MSG = f"**Ultroid has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+                await ultroid_bot.send_message(Var.LOG_CHANNEL, MSG)
+            except PeerIdInvalidError:
+                LOGS.warning("WRONG CHANNEL/GROUP ID in LOG_CHANNEL Var")
+            except BaseException as ef:
+                LOGS.info(ef)
     try:
-        await ultroid_bot(JoinChannelRequest("@FutureTechnologyGuardX"))
+        await ultroid_bot(JoinChannelRequest("@FutureTechnologyOfficial"))
     except BaseException:
         pass
 
 
-ultroid_bot.loop.run_until_complete(semxy())
-if Plug_channel:
-    ultroid_bot.loop.run_until_complete(plug())
-
+if str(BOT_MODE) != "True":
+    ultroid_bot.loop.run_until_complete(semxy())
+    if Plug_channel:
+        ultroid_bot.loop.run_until_complete(plug())
 ultroid_bot.loop.run_until_complete(hehe())
 
 LOGS.info(
