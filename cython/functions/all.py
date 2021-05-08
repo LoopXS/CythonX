@@ -1,9 +1,8 @@
 import asyncio
-import io
 import math
 import os
 import random
-import re
+import sys
 import time
 from math import sqrt
 from mimetypes import guess_type
@@ -17,13 +16,15 @@ import requests
 from apiclient.http import MediaFileUpload
 from bs4 import BeautifulSoup as bs
 from emoji import emojize
+from git import Repo
+from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 from googleapiclient.discovery import build
 from html_telegraph_poster import TelegraphPoster
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.file import Storage
 from PIL import Image
 from telegraph import Telegraph
-from telethon import events
+from telethon import Button, events
 from telethon.errors import (
     ChannelInvalidError,
     ChannelPrivateError,
@@ -56,6 +57,10 @@ from ..dB.database import Var
 from ..misc import *
 from ..misc._wrappers import *
 from ..utils import *
+from ._FastTelethon import download_file as downloadable
+from ._FastTelethon import upload_file as uploadable
+
+ultroid_version = "0.0.6"
 
 OAUTH_SCOPE = "https://www.googleapis.com/auth/drive.file"
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
@@ -74,6 +79,159 @@ CMD_WEB = {
     "file.io": 'curl -F "file=@{}" https://file.io',
     "siasky": 'curl -X POST "https://siasky.net/skynet/skyfile" -F "file=@{}"',
 }
+
+UPSTREAM_REPO_URL = "https://github.com/CipherX1-ops/Megatron"
+
+requirements_path = "resources/extras/local-requirements.txt"
+
+
+async def updateme_requirements():
+    reqs = str(requirements_path)
+    try:
+        process = await asyncio.create_subprocess_shell(
+            " ".join([sys.executable, "-m", "pip", "install", "-r", reqs]),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        await process.communicate()
+        return process.returncode
+    except Exception as e:
+        return repr(e)
+
+
+async def gen_chlog(repo, diff):
+    ac_br = repo.active_branch.name
+    ch_log = tldr_log = ""
+    ch = f"<b>CɪᴘʜᴇʀX Bot {ultroid_version} updates for <a href={UPSTREAM_REPO_URL}/tree/{ac_br}>[{ac_br}]</a>:</b>"
+    ch_tl = f"CɪᴘʜᴇʀX Bot {ultroid_version} updates for {ac_br}:"
+    d_form = "%d/%m/%y || %H:%M"
+    for c in repo.iter_commits(diff):
+        ch_log += f"\n\n💬 <b>{c.count()}</b> 🗓 <b>[{c.committed_datetime.strftime(d_form)}]</b>\n<b><a href={UPSTREAM_REPO_URL.rstrip('/')}/commit/{c}>[{c.summary}]</a></b> 👨‍💻 <code>{c.author}</code>"
+        tldr_log += f"\n\n💬 {c.count()} 🗓 [{c.committed_datetime.strftime(d_form)}]\n[{c.summary}] 👨‍💻 {c.author}"
+    if ch_log:
+        return str(ch + ch_log), str(ch_tl + tldr_log)
+    else:
+        return ch_log, tldr_log
+
+
+async def AreUpdatesAvailable():
+    off_repo = UPSTREAM_REPO_URL
+    try:
+        repo = Repo()
+    except NoSuchPathError as error:
+        await ultroid_bot.asst.send_message(
+            Var.LOG_CHANNEL, f"{txt}\n`directory {error} is not found`"
+        )
+        repo.__del__()
+        return
+    except GitCommandError as error:
+        await ultroid_bot.asst.send_message(
+            Var.LOG_CHANNEL, f"{txt}\n`Early failure! {error}`"
+        )
+        repo.__del__()
+        return
+    except InvalidGitRepositoryError:
+        repo = Repo.init()
+        origin = repo.create_remote("upstream", off_repo)
+        origin.fetch()
+        repo.create_head("main", origin.refs.main)
+        repo.heads.main.set_tracking_branch(origin.refs.main)
+        repo.heads.main.checkout(True)
+    ac_br = repo.active_branch.name
+    try:
+        repo.create_remote("upstream", off_repo)
+    except BaseException:
+        pass
+    ups_rem = repo.remote("upstream")
+    ups_rem.fetch(ac_br)
+    changelog, tl_chnglog = await gen_chlog(repo, f"HEAD..upstream/{ac_br}")
+    if changelog:
+        Avali = True
+    else:
+        Avali = False
+    return Avali
+
+
+async def updater():
+    off_repo = UPSTREAM_REPO_URL
+    try:
+        repo = Repo()
+    except NoSuchPathError as error:
+        await ultroid_bot.asst.send_message(
+            Var.LOG_CHANNEL, f"{txt}\n`directory {error} is not found`"
+        )
+        repo.__del__()
+        return
+    except GitCommandError as error:
+        await ultroid_bot.asst.send_message(
+            Var.LOG_CHANNEL, f"{txt}\n`Early failure! {error}`"
+        )
+        repo.__del__()
+        return
+    except InvalidGitRepositoryError:
+        repo = Repo.init()
+        origin = repo.create_remote("upstream", off_repo)
+        origin.fetch()
+        repo.create_head("main", origin.refs.main)
+        repo.heads.main.set_tracking_branch(origin.refs.main)
+        repo.heads.main.checkout(True)
+    ac_br = repo.active_branch.name
+    try:
+        repo.create_remote("upstream", off_repo)
+    except BaseException:
+        pass
+    ups_rem = repo.remote("upstream")
+    ups_rem.fetch(ac_br)
+    changelog, tl_chnglog = await gen_chlog(repo, f"HEAD..upstream/{ac_br}")
+    if changelog:
+        msg = await ultroid_bot.asst.send_file(
+            Var.LOG_CHANNEL,
+            "resources/extras/new_thumb.jpg",
+            caption="**0.0.6 Update Available**",
+            force_document=True,
+            buttons=Button.inline("Changelogs", data="changes"),
+        )
+    else:
+        msg = None
+    return msg
+
+
+async def uploader(file, name, taime, event, msg):
+    with open(file, "rb") as f:
+        result = await uploadable(
+            client=event.client,
+            file=f,
+            name=name,
+            progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
+                progress(
+                    d,
+                    t,
+                    event,
+                    taime,
+                    msg,
+                ),
+            ),
+        )
+    return result
+
+
+async def downloader(filename, file, event, taime, msg):
+    with open(filename, "wb") as fk:
+        result = await downloadable(
+            client=event.client,
+            location=file,
+            out=fk,
+            progress_callback=lambda d, t: asyncio.get_event_loop().create_task(
+                progress(
+                    d,
+                    t,
+                    event,
+                    taime,
+                    msg,
+                ),
+            ),
+        )
+    return result
 
 
 def make_html_telegraph(title, author, text):
@@ -248,7 +406,7 @@ async def ban_time(event, time_str):
 
 def list_files(http):
     drive = build("drive", "v2", http=http, cache_discovery=False)
-    x = drive.files().get(fileId="").execute()
+    x = drive.files().get(fileId="", supportsAllDrives=True).execute()
     files = {}
     for m in x["items"]:
         try:
@@ -273,6 +431,7 @@ async def gsearch(http, query, filename):
                 spaces="drive",
                 fields="nextPageToken, items(id, title, mimeType)",
                 pageToken=page_token,
+                supportsAllDrives=True,
             )
             .execute()
         )
@@ -311,7 +470,11 @@ async def create_directory(http, directory_name, parent_id):
     }
     if parent_id is not None:
         file_metadata["parents"] = [{"id": parent_id}]
-    file = drive_service.files().insert(body=file_metadata).execute()
+    file = (
+        drive_service.files()
+        .insert(body=file_metadata, supportsAllDrives=True)
+        .execute()
+    )
     file_id = file.get("id")
     drive_service.permissions().insert(fileId=file_id, body=permissions).execute()
     return file_id
@@ -392,7 +555,9 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
         "withLink": True,
     }
     os.path.getsize(file_path)
-    file = drive_service.files().insert(body=body, media_body=media_body)
+    file = drive_service.files().insert(
+        body=body, media_body=media_body, supportsAllDrives=True
+    )
     times = time.time()
     response = None
     display_message = ""
@@ -566,14 +731,42 @@ async def restart(ult):
         try:
             Heroku = heroku3.from_key(Var.HEROKU_API)
         except BaseException:
-            return await ult.edit(
-                "`HEROKU_API` is wrong! Kindly re-check in config vars."
+            return await eor(
+                ult, "`HEROKU_API` is wrong! Kindly re-check in config vars."
             )
-        await ult.edit("`Restarting CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ, please wait...`")
+        await eor(ult, "`Restarting CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ, please wait...`")
         app = Heroku.apps()[Var.HEROKU_APP_NAME]
         app.restart()
     else:
         execl(executable, executable, "-m", "cython")
+
+
+async def shutdown(ult, dynotype=["web", "worker"]):
+    ult = await eor(ult, "Shutting Down")
+    if Var.HEROKU_APP_NAME and Var.HEROKU_API:
+        try:
+            Heroku = heroku3.from_key(Var.HEROKU_API)
+        except BaseException:
+            return await ult.edit(
+                "`HEROKU_API` is wrong! Kindly re-check in config vars."
+            )
+        await ult.edit("`Shutting Down CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ, please wait for a minute!`")
+        app = Heroku.apps()[Var.HEROKU_APP_NAME]
+        if isinstance(dynotype, list):
+            app.process_formation()[(dynotype[0])].scale(0)
+            app.process_formation()[(dynotype[1])].scale(0)
+        elif isinstance(dynotype, str):
+            if dynotype == "userbot":
+                dynotype = "worker"
+            elif dynotype == "vcbot":
+                dynotype = "web"
+            else:
+                pass
+            app.process_formation()[dynotype].scale(0)
+        else:
+            return
+    else:
+        sys.exit(0)
 
 
 async def get_user_info(event):
@@ -620,7 +813,7 @@ def ReTrieveFile(input_file_name):
 
 
 async def resize_photo(photo):
-    """ Resize the given photo to 512x512 """
+    """Resize the given photo to 512x512"""
     image = Image.open(photo)
     maxsize = (512, 512)
     if (image.width and image.height) < 512:
@@ -741,7 +934,7 @@ async def get_chatinfo(event):
             return None
         except ChannelPrivateError:
             await eor(
-                event, "`This is a private channel/group or I'm banned from there`"
+                event, "`This is a private channel/group or I am banned from there`"
             )
             return None
         except ChannelPublicGroupNaError:
@@ -1059,23 +1252,13 @@ async def allcmds(event):
     await eod(event, f"CɪᴘʜᴇʀX Bot Commands : [Click Here]({w})", link_preview=False)
 
 
-def returnpage(query):
-    query = query.replace(" ", "%20")
-    link = f"http://getwallpapers.com/search?term={query}"
+def autopicsearch(query):
+    query = query.replace(" ", "-")
+    link = f"https://unsplash.com/s/photos/{query}"
     extra = requests.get(link)
     res = bs(extra.content, "html.parser", from_encoding="utf-8")
-    results = res.find_all("a", "ui fluid image")
+    results = res.find_all("a", "_2Mc8_")
     return results
-
-
-def animepp(link):
-    pc = requests.get(link).text
-    f = re.compile("/\\w+/full.+.jpg")
-    f = f.findall(pc)
-    fy = "http://getwallpapers.com" + random.choice(f)
-    res = requests.get(fy)
-    img = Image.open(io.BytesIO(res.content))
-    return img.save("autopic.jpg")
 
 
 async def randomchannel(tochat, channel, range1, range2, caption=None):
