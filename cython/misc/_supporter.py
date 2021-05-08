@@ -23,7 +23,6 @@ import logging
 from logging import DEBUG, INFO, basicConfig, getLogger
 
 sedprint = logging.getLogger("CɪᴘʜᴇʀX")
-
 ALIVE_NAME = ultroid_bot.me.first_name
 BOTLOG = Var.LOG_CHANNEL
 BOTLOG_CHATID = Var.LOG_CHANNEL
@@ -98,10 +97,7 @@ friday_on_cmd = admin_cmd
 j_cmd = admin_cmd
 command = ultroid_cmd
 register = ultroid_cmd
-friday_on_cmd = cipherxbot
-j_cmd = cipherxbot
-command = cipherxbot
-register = cipherxbot
+
 
 def sudo_cmd(allow_sudo=True, pattern=None, command=None, **args):
     args["func"] = lambda e: e.via_bot_id is None
@@ -140,7 +136,7 @@ edit_or_reply = eor
 edit_delete = eod
 
 #   To Install Other UB plugins
-#   CɪᴘʜᴇʀX Bot Doesn't Need This Configs
+#   Ultroid Don't Need This Configs
 
 ENV = bool(os.environ.get("ENV", False))
 if ENV:
@@ -164,7 +160,7 @@ if ENV:
         GOOGLE_SEARCH_COUNT_LIMIT = int(os.environ.get("GOOGLE_SEARCH_COUNT_LIMIT", 9))
         TG_GLOBAL_ALBUM_LIMIT = int(os.environ.get("TG_GLOBAL_ALBUM_LIMIT", 9))
         TG_BOT_TOKEN_BF_HER = Var.BOT_TOKEN
-        TG_BOT_USER_NAME_BF_HER = Var.BOT_USERNAME
+        TG_BOT_USER_NAME_BF_HER = asst.me.username
         DUAL_LOG = os.environ.get("DUAL_LOG", None)
         MAX_MESSAGE_SIZE_LIMIT = 4095
         UB_BLACK_LIST_CHAT = Var.BLACKLIST_CHAT
