@@ -169,7 +169,7 @@ def ultroid_cmd(allow_sudo=on, **args):
                 ftext = (
                     "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Error Report\n\n"
                 )
-                ftext += "`CythonX Version: " + str(pyver)
+                ftext += "CythonX Version: " + str(pyver)
                 ftext += "\nCɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version: " + str(ult_ver)
                 ftext += "\nTelethon Version: " + str(telever) + "\n\n"
                 ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
@@ -184,7 +184,6 @@ def ultroid_cmd(allow_sudo=on, **args):
                 ftext += str(sys.exc_info()[1])
                 ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
 
-                ftext += result + "`"
 
                 if Var.LOG_CHANNEL:
                     Placetosend = Var.LOG_CHANNEL
