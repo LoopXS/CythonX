@@ -57,6 +57,18 @@ def ungban(id):
         return False
 
 
+def get_gban_reason(uid):
+    return udB.get(f"GBAN_REASON_{uid}")
+
+
+def delete_gban_reason(uid):
+    udB.delete(f"GBAN_REASON_{uid}")
+
+
+def add_gban_reason(uid, reason):
+    udB.set(f"GBAN_REASON_{uid}", reason)
+
+
 def gmuted_user():
     gmute = udB.get("GMUTE")
     if gmute is None or gmute == "":
