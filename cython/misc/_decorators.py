@@ -3,15 +3,16 @@ import re
 import sys
 from asyncio import create_subprocess_shell as asyncsubshell
 from asyncio import subprocess as asyncsub
-from os import remove
 from pathlib import Path
 from sys import *
 from time import gmtime, sleep, strftime
 from traceback import format_exc
 
-import requests
+from plugins import ultroid_version as ult_ver
 from telethon import *
+from telethon import __version__ as telever
 from telethon.errors.rpcerrorlist import (
+    BotMethodInvalidError,
     FloodWaitError,
     MessageIdInvalidError,
     MessageNotModifiedError,
@@ -22,6 +23,7 @@ from ..dB.core import *
 from ..dB.database import Var
 from ..functions.all import time_formatter as tf
 from ..utils import *
+from ..version import __version__ as pyver
 from ._wrappers import *
 
 # sudo
@@ -45,7 +47,17 @@ else:
 
 hndlr = "\\" + HNDLR
 
+kek = udB.get("SUDO_PLUGINS")
 
+if kek:
+    SUDO_ALLOWED_PLUGINS = set(str(x) for x in kek.split(" "))
+else:
+    SUDO_ALLOWED_PLUGINS = ""
+
+if SUDO_ALLOWED_PLUGINS:
+    sudoplugs = list(SUDO_ALLOWED_PLUGINS)
+else:
+    sudoplugs = ""
 # decorator
 
 
@@ -58,14 +70,15 @@ def ultroid_cmd(allow_sudo=on, **args):
     pattern = args["pattern"]
     groups_only = args.get("groups_only", False)
     admins_only = args.get("admins_only", False)
-    args["outgoing"] = True
+    # args["outgoing"] = True
 
-    if allow_sudo == "True":
-        args["from_users"] = sed
-        args["incoming"] = True
-
-    else:
-        args["outgoing"] = True
+    # if allow_sudo == "True":
+    #    args["from_users"] = sed
+    #    args["incoming"] = True if str(file_test) in sudoplugs else False
+    # elif allow_sudo == "False" and BOT_MODE:
+    #    args["from_users"] = [ultroid_bot.uid]
+    # else:
+    #    args["outgoing"] = True
 
     if pattern is not None:
         if pattern.startswith(r"\#"):
@@ -112,13 +125,18 @@ def ultroid_cmd(allow_sudo=on, **args):
 
     def decorator(func):
         async def wrapper(ult):
+            if allow_sudo == "False":
+                if not ult.out:
+                    return
+            if not ult.out and (ult.sender_id not in sudos):
+                return
             chat = await ult.get_chat()
             if ult.fwd_from:
                 return
             if groups_only and ult.is_private:
                 return await eod(ult, "`Use this in group/channel.`", time=3)
             if admins_only and not chat.admin_rights:
-                return await eod(ult, "`I'm not an admin.`", time=3)
+                return await eod(ult, "`I am not an admin.`", time=3)
             try:
                 await func(ult)
             except MessageIdInvalidError:
@@ -135,6 +153,11 @@ def ultroid_cmd(allow_sudo=on, **args):
                     Var.LOG_CHANNEL,
                     "`CɪᴘʜᴇʀX Bot is working again`",
                 )
+            except BotMethodInvalidError:
+                return await eor(
+                    ult,
+                    "Seems Like You are using BOT_MODE\nYou cant Use This Command !",
+                )
             except events.StopPropagation:
                 raise events.StopPropagation
             except KeyboardInterrupt:
@@ -143,13 +166,12 @@ def ultroid_cmd(allow_sudo=on, **args):
                 LOGS.exception(e)
                 date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
-                text = "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Error Report**\n"
-                ftext = "\nDisclaimer:\nThis file uploaded ONLY here, "
-                ftext += "we logged only fact of error and date, "
-                ftext += "we respect your privacy, "
-                ftext += "you may not report this error if you've "
-                ftext += "any confidential data here, no one will see your data "
-                ftext += "if you choose not to do so.\n\n"
+                ftext = (
+                    "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Error Report\n\n"
+                )
+                ftext += "`CythonX Version: " + str(pyver)
+                ftext += "\nCɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version: " + str(ult_ver)
+                ftext += "\nTelethon Version: " + str(telever) + "\n\n"
                 ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
                 ftext += "\nDate: " + date
                 ftext += "\nGroup ID: " + str(ult.chat_id)
@@ -162,24 +184,16 @@ def ultroid_cmd(allow_sudo=on, **args):
                 ftext += str(sys.exc_info()[1])
                 ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
 
-                file = open("cipherx.txt", "w+")
-                file.write(ftext)
-                file.close()
-                key = requests.post(
-                    "https://nekobin.com/api/documents", json={"content": ftext}
-                ).json()["result"]["key"]
-                url = f"https://nekobin.com/{key}"
-                text += f"\nPasted [here]({url}) too."
+                ftext += result + "`"
+
                 if Var.LOG_CHANNEL:
                     Placetosend = Var.LOG_CHANNEL
                 else:
                     Placetosend = ultroid_bot.uid
-                await ultroid_bot.asst.send_file(
+                await ultroid_bot.asst.send_message(
                     Placetosend,
-                    "cipherx.txt",
-                    caption=text,
+                    ftext,
                 )
-                remove("cipherx.txt")
 
         ultroid_bot.add_event_handler(wrapper, events.NewMessage(**args))
         try:
