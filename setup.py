@@ -14,6 +14,7 @@ setuptools.setup(
     name=name,
     version=version,
     author=author,
+    author_email=author_email,
     description=description,
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -21,10 +22,10 @@ setuptools.setup(
     license=license,
     packages=setuptools.find_packages(),
     install_requires=[
-        "telethon==1.21.1",
+        "telethon",
         "redis",
         "python-decouple==3.3",
-        "cryptg",
+        "telethon-tgcrypto",
         "python-dotenv==0.15.0",
     ],
     classifiers=[
