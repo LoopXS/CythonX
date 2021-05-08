@@ -3,17 +3,17 @@ from cython import *
 from ..dB.database import Var
 
 DANGER = [
-    "APP_ID",
-    "API_HASH",
     "SESSION",
     "HEROKU_API",
     "base64",
-    "base32",
-    "get_me",
+    "bash",
+    "get_me()",
     "phone",
     "REDIS_PASSWORD",
     "load_addons",
     "load_plugins",
+    "os.system",
     "sys.stdout",
     "sys.stderr",
+    "subprocess",
 ]
