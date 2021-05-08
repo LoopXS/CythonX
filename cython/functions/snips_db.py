@@ -51,10 +51,9 @@ def get_snips():
 def add_snip(word, msg, media):
     try:
         rr = str({"msg": msg, "media": media})
-        the_thing = f"{chat}$|{word}$|{rr}"
+        the_thing = f"{word}$|{rr}"
         rt = udB.get("SNIP")
         if not rt:
-            the_thing = f"{word}$|{rr}"
             udB.set("SNIP", the_thing)
         else:
             xx = rt.split("|||")
