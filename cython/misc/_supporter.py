@@ -13,11 +13,11 @@ from cython.misc._decorators import *
 from cython.misc._wrappers import *
 
 from .. import *
-from .. import ultroid_bot as cipherxbot
 from ..dB.core import *
 from ..dB.database import Var
 from ..functions.sudos import *
 from ..utils import *
+from .. import ultroid_bot as cipherxbot
 
 import logging
 from logging import DEBUG, INFO, basicConfig, getLogger
@@ -136,7 +136,7 @@ edit_or_reply = eor
 edit_delete = eod
 
 #   To Install Other UB plugins
-#   CɪᴘʜᴇʀX Bot Doesn't Need This Configs
+#   CɪᴘʜᴇʀX Bot Don't Need This Configs
 
 ENV = bool(os.environ.get("ENV", False))
 if ENV:
