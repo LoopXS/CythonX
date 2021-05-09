@@ -167,7 +167,7 @@ def ultroid_cmd(allow_sudo=on, **args):
                 date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
                 ftext = (
-                    "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Client Error:** `Forward this to` @UltroidSupport\n\n"
+                    "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Client Error:**\n\n"
                 )
                 ftext += "`CythonX Version: " + str(pyver)
                 ftext += "\nCɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version: " + str(ult_ver)
