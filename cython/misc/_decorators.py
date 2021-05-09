@@ -136,7 +136,7 @@ def ultroid_cmd(allow_sudo=on, **args):
             if groups_only and ult.is_private:
                 return await eod(ult, "`Use this in group/channel.`", time=3)
             if admins_only and not chat.admin_rights:
-                return await eod(ult, "`I am not an admin.`", time=3)
+                return await eod(ult, "`I'm not an admin.`", time=3)
             try:
                 await func(ult)
             except MessageIdInvalidError:
@@ -167,9 +167,9 @@ def ultroid_cmd(allow_sudo=on, **args):
                 date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
 
                 ftext = (
-                    "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Error Report\n\n"
+                    "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Client Error:** `Forward this to` @UltroidSupport\n\n"
                 )
-                ftext += "CythonX Version: " + str(pyver)
+                ftext += "`CythonX Version: " + str(pyver)
                 ftext += "\nCɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version: " + str(ult_ver)
                 ftext += "\nTelethon Version: " + str(telever) + "\n\n"
                 ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
@@ -183,7 +183,6 @@ def ultroid_cmd(allow_sudo=on, **args):
                 ftext += "\n\nError text:\n"
                 ftext += str(sys.exc_info()[1])
                 ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
-
 
                 if Var.LOG_CHANNEL:
                     Placetosend = Var.LOG_CHANNEL
