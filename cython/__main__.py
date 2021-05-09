@@ -27,7 +27,7 @@ if os.path.exists("cipherx.log"):
 logging.basicConfig(
     format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s",
     level=logging.INFO,
-    handlers=[logging.FileHandler("cipherx.log"), logging.StreamHandler()],
+    handlers=[logging.FileHandler("ultroid.log"), logging.StreamHandler()],
 )
 
 if not os.path.isdir("resources/auths"):
@@ -39,6 +39,9 @@ if not os.path.isdir("resources/downloads"):
 if not os.path.isdir("addons"):
     os.mkdir("addons")
 
+if udB.get("CUSTOM_THUMBNAIL"):
+    os.system(f"wget {udB.get('CUSTOM_THUMBNAIL')} -O resources/extras/new_thumb.jpg")
+
 token = udB.get("GDRIVE_TOKEN")
 if token:
     with open("resources/auths/auth_token.txt", "w") as t_file:
@@ -47,8 +50,15 @@ if token:
 websocket = udB.get("WEBSOCKET_URL")
 if websocket:
     ulr = f"WEBSOCKET_URL={websocket}"
-    with open(".env", "w") as t:
-        t.write(ulr)
+    try:
+        with open(".env", "r") as x:
+            m = x.read()
+        if "WEBSOCKET_URL" not in m:
+            with open(".env", "a+") as t:
+                t.write("\n" + ulr)
+    except BaseException:
+        with open(".env", "w") as t:
+            t.write(ulr)
 
 
 async def istart(ult):
@@ -69,10 +79,10 @@ async def istart(ult):
 ultroid_bot.asst = None
 
 
-async def bot_info(botasst):
-    await botasst.start()
-    botasst.me = await botasst.get_me()
-    return botasst.me
+async def bot_info(asst):
+    await asst.start()
+    asst.me = await asst.get_me()
+    return asst.me
 
 
 LOGS.info(
@@ -99,7 +109,7 @@ if Var.BOT_TOKEN:
     LOGS.info("Starting CɪᴘʜᴇʀX Bot...")
     try:
         ultroid_bot.asst = TelegramClient(
-            None, api_id=Var.API_ID, api_hash=Var.API_HASH
+            "ultroid", api_id=Var.API_ID, api_hash=Var.API_HASH
         ).start(bot_token=Var.BOT_TOKEN)
         asst = ultroid_bot.asst
         ultroid_bot.loop.run_until_complete(istart(asst))
@@ -151,9 +161,9 @@ for name in files:
                 load_plugins(plugin_name.replace(".py", ""))
                 if not plugin_name.startswith("__") or plugin_name.startswith("_"):
                     LOGS.info(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
-        except Exception as e:
+        except Exception:
             LOGS.info(f"CɪᴘʜᴇʀX Bot - Official - ERROR - {plugin_name}")
-            LOGS.info(str(e))
+            LOGS.info(str(traceback.print_exc()))
 
 
 # for addons
@@ -163,7 +173,7 @@ if addons == "True" or addons is None:
         os.system("git clone https://github.com/CipherX1-ops/Megatron-addons.git addons/")
     except BaseException:
         pass
-    LOGS.info("Installing packages for addons...")
+    LOGS.info("Installing packages for addons")
     os.system("pip install -r addons/addons.txt")
     path = "addons/*.py"
     files = glob.glob(path)
@@ -211,12 +221,13 @@ if Plug_channel:
             LOGS.info("PLUGIN_CHANNEL Can't be used in BOT_MODE")
             return
         try:
-            if Plug_channel.isdigit():
-                chat = int(Plug_channel)
-            elif Plug_channel.startswith("@"):
+            if Plug_channel.startswith("@"):
                 chat = Plug_channel
             else:
-                return
+                try:
+                    chat = int(Plug_channel)
+                except BaseException:
+                    return
             async for x in ultroid_bot.iter_messages(
                 chat, search=".py", filter=InputMessagesFilterDocument
             ):
@@ -257,7 +268,7 @@ async def semxy():
     try:
         xx = await ultroid_bot.get_entity(asst.me.username)
         if xx.photo is None:
-            LOGS.info("Customizing your Assistant Bot in @BOTFATHER")
+            LOGS.info("Customising Ur Assistant Bot in @BOTFATHER")
             UL = f"@{asst.me.username}"
             if (ultroid_bot.me.username) is None:
                 sir = ultroid_bot.me.first_name
@@ -284,7 +295,7 @@ async def semxy():
             await ultroid_bot.send_message("botfather", UL)
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
-                "botfather", f"✨Hello✨!! I'm Assistant Bot of {sir}"
+                "botfather", f"✨ Hello ✨!! I'm Assistant Bot of {sir}"
             )
             await asyncio.sleep(2)
             await ultroid_bot.send_message("botfather", "/setdescription")
@@ -293,7 +304,7 @@ async def semxy():
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
                 "botfather",
-                f"✨PowerFull CɪᴘʜᴇʀX Assistant Bot✨\n✨Master ~ {sir} ✨\n\n✨Powered By ~ CɪᴘʜᴇʀX✨",
+                f"✨ PowerFul CɪᴘʜᴇʀX Assistant Bot ✨\n✨ Master ~ {sir} ✨\n\n✨ Powered By ~ CɪᴘʜᴇʀX ✨",
             )
             await asyncio.sleep(2)
             await ultroid_bot.send_message("botfather", "/start")
