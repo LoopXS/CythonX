@@ -23,7 +23,6 @@ def load_plugins(plugin_name):
         from pathlib import Path
 
         from . import HNDLR, LOGS, udB, ultroid_bot
-        from . import ultroid_bot as cipherxbot
         from .dB.database import Var
         from .misc import _supporter as xxx
         from .misc._assistant import (
@@ -46,11 +45,6 @@ def load_plugins(plugin_name):
         mod.ultroid_bot = ultroid_bot
         mod.bot = ultroid_bot
         mod.ultroid = ultroid_bot
-        mod.asst = cipherxbot.asst
-        mod.tgbot = cipherxbot.asst
-        mod.cipherxbot = cipherxbot
-        mod.bot = cipherxbot
-        mod.ultroid = cipherxbot
         mod.owner = owner()
         mod.in_owner = inline_owner()
         mod.inline = inline()
@@ -104,7 +98,6 @@ def load_addons(plugin_name):
         from pathlib import Path
 
         from . import HNDLR, LOGS, udB, ultroid_bot
-        from . import ultroid_bot as cipherxbot
         from .dB.database import Var
         from .misc import _supporter as xxx
         from .misc._assistant import (
@@ -133,16 +126,6 @@ def load_addons(plugin_name):
         mod.telebot = ultroid_bot
         mod.jarvis = ultroid_bot
         mod.friday = ultroid_bot
-        mod.asst = cipherxbot.asst
-        mod.tgbot = cipherxbot.asst
-        mod.cipherxbot = cipherxbot
-        mod.ub = cipherxbot
-        mod.bot = cipherxbot
-        mod.ultroid = cipherxbot
-        mod.borg = cipherxbot
-        mod.telebot = cipherxbot
-        mod.jarvis = cipherxbot
-        mod.friday = cipherxbot
         mod.owner = owner()
         mod.in_owner = inline_owner()
         mod.inline = inline()
@@ -214,7 +197,6 @@ def load_assistant(plugin_name):
         from pathlib import Path
 
         from . import HNDLR, udB, ultroid_bot
-        from . import ultroid_bot as cipherxbot
         from .misc._assistant import asst_cmd, callback, in_pattern, inline_owner, owner
         from .misc._wrappers import eod, eor
 
@@ -224,14 +206,10 @@ def load_assistant(plugin_name):
         mod = importlib.util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
         mod.ultroid = ultroid_bot
-        mod.cipherxbot = cipherxbot
-        mod.ultroid = cipherxbot
         mod.Redis = udB.get
         mod.udB = udB
         mod.bot = ultroid_bot
         mod.asst = ultroid_bot.asst
-        mod.bot = cipherxbot
-        mod.asst = cipherxbot.asst
         mod.owner = owner()
         mod.in_pattern = in_pattern
         mod.in_owner = inline_owner()
@@ -266,7 +244,6 @@ def load_pmbot(plugin_name):
         from pathlib import Path
 
         from . import HNDLR, udB, ultroid_bot
-        from . import ultroid_bot as cipherxbot
         from .misc._assistant import asst_cmd, callback, owner
         from .misc._wrappers import eod, eor
 
@@ -277,13 +254,9 @@ def load_pmbot(plugin_name):
         mod.ultroid_bot = ultroid_bot
         mod.ultroid = ultroid_bot
         mod.bot = ultroid_bot
-        mod.cipherxbot = cipherxbot
-        mod.ultroid = cipherxbot
-        mod.bot = cipherxbot
         mod.Redis = udB.get
         mod.udB = udB
         mod.asst = ultroid_bot.asst
-        mod.asst = cipherxbot.asst
         mod.owner = owner()
         mod.eod = eod
         mod.eor = eor
