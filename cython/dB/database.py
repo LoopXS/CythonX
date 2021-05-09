@@ -9,7 +9,6 @@ class Var(object):
     API_ID = config("API_ID", default=0, cast=int)
     API_HASH = config("API_HASH", default=None)
     BOT_TOKEN = config("BOT_TOKEN", default=None)
-    BOT_USERNAME = config("BOT_USERNAME", default=None)
     SESSION = config("SESSION", default=None)
     DB_URI = config("DATABASE_URL", default=None)
     LOG_CHANNEL = config("LOG_CHANNEL", default=None, cast=int)
