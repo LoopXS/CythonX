@@ -27,7 +27,7 @@ if os.path.exists("cipherx.log"):
 logging.basicConfig(
     format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s",
     level=logging.INFO,
-    handlers=[logging.FileHandler("ultroid.log"), logging.StreamHandler()],
+    handlers=[logging.FileHandler("cipherx.log"), logging.StreamHandler()],
 )
 
 if not os.path.isdir("resources/auths"):
@@ -268,7 +268,7 @@ async def semxy():
     try:
         xx = await ultroid_bot.get_entity(asst.me.username)
         if xx.photo is None:
-            LOGS.info("Customising Ur Assistant Bot in @BOTFATHER")
+            LOGS.info("Customizing Your Assistant Bot in @BOTFATHER")
             UL = f"@{asst.me.username}"
             if (ultroid_bot.me.username) is None:
                 sir = ultroid_bot.me.first_name
