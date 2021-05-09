@@ -35,7 +35,7 @@ except ResponseError as res:
     exit(1)
 
 if not Var.API_ID or not Var.API_HASH:
-    wr("No API_ID or API_HASH found. CɪᴘʜᴇʀX Bot Quiting...")
+    wr("No API_ID or API_HASH found. CɪᴘʜᴇʀX Quiting...")
     exit(1)
 
 BOT_MODE = Var.BOT_MODE or udB.get("BOT_MODE")
