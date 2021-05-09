@@ -17,7 +17,6 @@ from ..dB.core import *
 from ..dB.database import Var
 from ..functions.sudos import *
 from ..utils import *
-from .. import ultroid_bot as cipherxbot
 
 import logging
 from logging import DEBUG, INFO, basicConfig, getLogger
@@ -32,10 +31,6 @@ bot = ultroid_bot
 borg = ultroid_bot
 friday = ultroid_bot
 jarvis = ultroid_bot
-bot = cipherxbot
-borg = cipherxbot
-friday = cipherxbot
-jarvis = cipherxbot
 
 ok = udB.get("SUDOS")
 if ok:
