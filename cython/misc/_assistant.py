@@ -38,13 +38,22 @@ def inline_owner():
                     builder = event.builder
                     sur = builder.article(
                         title="CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ",
-                        url="https://t.me/Hackintush",
-                        description="(c) CɪᴘʜᴇʀX",
+                        url="https://t.me/CipherXBot",
+                        description="(c) CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ",
                         text=MSG,
                         thumb=InputWebDocument(ULTROID_PIC, 0, "image/jpeg", []),
                         buttons=[
-                            [Button.url("✵ CɪᴘʜᴇʀX Ⲃⲟⲧ ✵", url="https://t.me/CipherXBot")]
-                        ]
+                            [
+                                Button.url(
+                                    "✵CɪᴘʜᴇʀX Ⲃⲟⲧ✵",
+                                    url="https://t.me/CipherXBot",
+                                ),
+                                Button.url(
+                                    "✵Suᴩᴩᴏrᴛ Chᴀnnᴇl✵", 
+                                    url="https://t.me/FutureTechnologyOfficial"
+                                ),
+                            ]
+                        ],
                     )
                     await event.answer(
                         [sur],
