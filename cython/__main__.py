@@ -1,64 +1,109 @@
 import asyncio
 import glob
-import logging
 import os
 import traceback
+import urllib
 from pathlib import Path
+from random import randint
 
 import telethon.utils
 from telethon import TelegramClient
 from telethon import __version__ as vers
-from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError, PeerIdInvalidError
+from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
 from telethon.tl.custom import Button
-from telethon.tl.functions.channels import InviteToChannelRequest, JoinChannelRequest
-from telethon.tl.functions.messages import AddChatUserRequest
-from telethon.tl.types import InputMessagesFilterDocument
+from telethon.tl.functions.channels import (
+    CreateChannelRequest,
+    EditAdminRequest,
+    EditPhotoRequest,
+    JoinChannelRequest,
+)
+from telethon.tl.types import (
+    ChatAdminRights,
+    InputChatUploadedPhoto,
+    InputMessagesFilterDocument,
+)
 
 from . import *
-from .functions.all import AreUpdatesAvailable
+from .functions.all import updater
 from .utils import *
 from .version import __version__ as ver
 
-# remove the old logs file.
-if os.path.exists("cipherx.log"):
-    os.remove("cipherx.log")
-
-# start logging into a new file.
-logging.basicConfig(
-    format="[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s",
-    level=logging.INFO,
-    handlers=[logging.FileHandler("cipherx.log"), logging.StreamHandler()],
-)
-
-if not os.path.isdir("resources/auths"):
-    os.mkdir("resources/auths")
-
-if not os.path.isdir("resources/downloads"):
-    os.mkdir("resources/downloads")
-
-if not os.path.isdir("addons"):
-    os.mkdir("addons")
+x = ["resources/auths", "resources/downloads", "addons"]
+for x in x:
+    if not os.path.isdir(x):
+        os.mkdir(x)
 
 if udB.get("CUSTOM_THUMBNAIL"):
-    os.system(f"wget {udB.get('CUSTOM_THUMBNAIL')} -O resources/extras/new_thumb.jpg")
+    os.system(f"wget {udB.get('CUSTOM_THUMBNAIL')} -O resources/extras/cipherx.jpg")
 
-token = udB.get("GDRIVE_TOKEN")
-if token:
+if udB.get("GDRIVE_TOKEN"):
     with open("resources/auths/auth_token.txt", "w") as t_file:
-        t_file.write(token)
+        t_file.write(udB.get("GDRIVE_TOKEN"))
 
-websocket = udB.get("WEBSOCKET_URL")
-if websocket:
-    ulr = f"WEBSOCKET_URL={websocket}"
-    try:
-        with open(".env", "r") as x:
-            m = x.read()
-        if "WEBSOCKET_URL" not in m:
-            with open(".env", "a+") as t:
-                t.write("\n" + ulr)
-    except BaseException:
-        with open(".env", "w") as t:
-            t.write(ulr)
+
+async def autobot():
+    await ultroid_bot.start()
+    if Var.BOT_TOKEN:
+        udB.set("BOT_TOKEN", str(Var.BOT_TOKEN))
+        return
+    LOGS.info("MAKING A TELEGRAM BOT FOR YOU AT @BotFather , Please Kindly Wait")
+    who = await ultroid_bot.get_me()
+    name = who.first_name + "'s Assistant Bot"
+    if who.username:
+        username = who.username + "_bot"
+    else:
+        username = "ultroid_" + (str(who.id))[5:] + "_bot"
+    bf = "Botfather"
+    await ultroid_bot.send_message(bf, "/cancel")
+    await asyncio.sleep(1)
+    await ultroid_bot.send_message(bf, "/start")
+    await asyncio.sleep(1)
+    await ultroid_bot.send_message(bf, "/newbot")
+    await asyncio.sleep(1)
+    await ultroid_bot.send_message(bf, name)
+    await asyncio.sleep(1)
+    await ultroid_bot.send_message(bf, username)
+    await asyncio.sleep(1)
+    isdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
+    await ultroid_bot.send_read_acknowledge("botfather")
+    if isdone.startswith("Sorry,"):
+        ran = randint(1, 100)
+        username = "ultroid_" + (str(who.id))[6:] + str(ran) + "_bot"
+        await ultroid_bot.send_message(bf, username)
+        await asyncio.sleep(1)
+        nowdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
+        if nowdone.startswith("Done!"):
+            token = nowdone.split("`")[1]
+            udB.set("BOT_TOKEN", token)
+            await ultroid_bot.send_message(bf, "/setinline")
+            await asyncio.sleep(1)
+            await ultroid_bot.send_message(bf, f"@{username}")
+            await asyncio.sleep(1)
+            await ultroid_bot.send_message(bf, "Search")
+            LOGS.info(f"DONE YOUR TELEGRAM BOT IS CREATED SUCCESSFULLY @{username}")
+        else:
+            LOGS.info(
+                f"Please Delete Some Of your Telegram bots at @Botfather or Set Var BOT_TOKEN with token of a bot"
+            )
+            exit(1)
+    elif isdone.startswith("Done!"):
+        token = isdone.split("`")[1]
+        udB.set("BOT_TOKEN", token)
+        await ultroid_bot.send_message(bf, "/setinline")
+        await asyncio.sleep(1)
+        await ultroid_bot.send_message(bf, f"@{username}")
+        await asyncio.sleep(1)
+        await ultroid_bot.send_message(bf, "Search")
+        LOGS.info(f"DONE YOUR TELEGRAM BOT IS CREATED SUCCESSFULLY @{username}")
+    else:
+        LOGS.info(
+            f"Please Delete Some Of your Telegram bots at @Botfather or Set Var BOT_TOKEN with token of a bot"
+        )
+        exit(1)
+
+
+if not udB.get("BOT_TOKEN") and str(BOT_MODE) != "True":
+    ultroid_bot.loop.run_until_complete(autobot())
 
 
 async def istart(ult):
@@ -69,11 +114,63 @@ async def istart(ult):
     if not ultroid_bot.me.bot:
         udB.set("OWNER_ID", ultroid_bot.uid)
     if str(BOT_MODE) == "True":
-        OWNER = await ultroid_bot.get_entity(int(udB.get("OWNER_ID")))
-        ultroid_bot.me = OWNER
-        asst.me = OWNER
-        ultroid_bot.uid = OWNER.id
-        ultroid_bot.first_name = OWNER.first_name
+        if Var.OWNER_ID:
+            OWNER = await ultroid_bot.get_entity(Var.OWNER_ID)
+            ultroid_bot.me = OWNER
+            asst.me = OWNER
+            ultroid_bot.uid = OWNER.id
+            ultroid_bot.first_name = OWNER.first_name
+        elif udB.get("OWNER_ID"):
+            OWNER = await ultroid_bot.get_entity(int(udB.get("OWNER_ID")))
+            ultroid_bot.me = OWNER
+            asst.me = OWNER
+            ultroid_bot.uid = OWNER.id
+            ultroid_bot.first_name = OWNER.first_name
+
+
+async def autopilot():
+    await ultroid_bot.start()
+    if Var.LOG_CHANNEL and str(Var.LOG_CHANNEL).startswith("-100"):
+        udB.set("LOG_CHANNEL", str(Var.LOG_CHANNEL))
+    if udB.get("LOG_CHANNEL"):
+        try:
+            await ultroid_bot.get_entity(int(udB.get("LOG_CHANNEL")))
+            return
+        except BaseException:
+            udB.delete("LOG_CHANNEL")
+    r = await ultroid_bot(
+        CreateChannelRequest(
+            title="My CɪᴘʜᴇʀX Bot Logs",
+            about="My CɪᴘʜᴇʀX Bot Log Group",
+            megagroup=True,
+        ),
+    )
+    chat_id = r.chats[0].id
+    if not str(chat_id).startswith("-100"):
+        udB.set("LOG_CHANNEL", "-100" + str(chat_id))
+    else:
+        udB.set("LOG_CHANNEL", str(chat_id))
+    rights = ChatAdminRights(
+        add_admins=True,
+        invite_users=True,
+        change_info=True,
+        ban_users=True,
+        delete_messages=True,
+        pin_messages=True,
+        anonymous=False,
+        manage_call=True,
+    )
+    await ultroid_bot(EditAdminRequest(chat_id, asst.me.username, rights, "Assistant"))
+    pfpa = await ultroid_bot.download_profile_photo(chat_id)
+    if not pfpa:
+        urllib.request.urlretrieve(
+            "https://telegra.ph/file/b2da137de76fc5cd85ffa.jpg", "channelphoto.jpg"
+        )
+        ll = await ultroid_bot.upload_file("channelphoto.jpg")
+        await ultroid_bot(EditPhotoRequest(chat_id, InputChatUploadedPhoto(ll)))
+        os.remove("channelphoto.jpg")
+    else:
+        os.remove(pfpa)
 
 
 ultroid_bot.asst = None
@@ -85,19 +182,10 @@ async def bot_info(asst):
     return asst.me
 
 
-LOGS.info(
-    """
-                -----------------------------------
-                        Starting Deployment
-                -----------------------------------
-"""
-)
-
-
 LOGS.info("Initializing...")
 LOGS.info(f"CythonX Version - {ver}")
 LOGS.info(f"Telethon Version - {vers}")
-LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.6")
+LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.7")
 
 if str(BOT_MODE) == "True":
     mode = "Bot Mode - Started"
@@ -105,12 +193,13 @@ else:
     mode = "User Mode - Started"
 
 # log in
-if Var.BOT_TOKEN:
+BOT_TOKEN = udB.get("BOT_TOKEN")
+if BOT_TOKEN:
     LOGS.info("Starting CɪᴘʜᴇʀX Bot...")
     try:
         ultroid_bot.asst = TelegramClient(
-            "ultroid", api_id=Var.API_ID, api_hash=Var.API_HASH
-        ).start(bot_token=Var.BOT_TOKEN)
+            None, api_id=Var.API_ID, api_hash=Var.API_HASH
+        ).start(bot_token=BOT_TOKEN)
         asst = ultroid_bot.asst
         ultroid_bot.loop.run_until_complete(istart(asst))
         ultroid_bot.loop.run_until_complete(bot_info(asst))
@@ -133,7 +222,7 @@ BOTINVALID_PLUGINS = [
     "autopic",
     "pmpermit",
     "fedutils",
-    "_tagnotifs",
+    "_userlogs",
     "webupload",
     "clone",
     "inlinefun",
@@ -144,6 +233,9 @@ BOTINVALID_PLUGINS = [
     "findsong",
     "sticklet",
 ]
+
+if str(BOT_MODE) != "True":
+    ultroid_bot.loop.run_until_complete(autopilot())
 
 # for userbot
 path = "plugins/*.py"
@@ -191,8 +283,8 @@ if addons == "True" or addons is None:
                     if not plugin_name.startswith("__") or plugin_name.startswith("_"):
                         LOGS.info(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
             except Exception as e:
-                LOGS.warning(f"CɪᴘʜᴇʀX Bot - Addons - ERROR - {plugin_name}")
-                LOGS.warning(str(e))
+                LOGS.info(f"CɪᴘʜᴇʀX Bot - Addons - ERROR - {plugin_name}")
+                LOGS.info(str(e))
 else:
     os.system("cp plugins/__init__.py addons/")
 
@@ -209,8 +301,8 @@ for name in files:
             if not plugin_name.startswith("__") or plugin_name.startswith("_"):
                 LOGS.info(f"CɪᴘʜᴇʀX Bot - Assistant - Installed - {plugin_name}")
         except Exception as e:
-            LOGS.warning(f"CɪᴘʜᴇʀX Bot - Assistant - ERROR - {plugin_name}")
-            LOGS.warning(str(e))
+            LOGS.info(f"CɪᴘʜᴇʀX Bot - Assistant - ERROR - {plugin_name}")
+            LOGS.info(str(e))
 
 # for channel plugin
 Plug_channel = udB.get("PLUGIN_CHANNEL")
@@ -240,13 +332,13 @@ if Plug_channel:
                         load_addons(plugin.replace(".py", ""))
                         LOGS.info(f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - Installed - {plugin}")
                     except Exception as e:
-                        LOGS.warning(f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - ERROR - {plugin}")
-                        LOGS.warning(str(e))
+                        LOGS.info(f"CɪᴘʜᴇʀX Bot - PLUGIN_CHANNEL - ERROR - {plugin}")
+                        LOGS.info(str(e))
                 else:
                     LOGS.info(f"Plugin {plugin} is Pre Installed")
                     os.remove(files)
         except Exception as e:
-            LOGS.warning(str(e))
+            LOGS.info(str(e))
 
 
 # chat via assistant
@@ -264,18 +356,19 @@ if pmbot == "True":
 # customize assistant
 
 
-async def semxy():
+async def customize():
     try:
+        chat_id = int(udB.get("LOG_CHANNEL"))
         xx = await ultroid_bot.get_entity(asst.me.username)
         if xx.photo is None:
-            LOGS.info("Customizing Your Assistant Bot in @BOTFATHER")
+            LOGS.info("Customizing your Assistant Bot in @BOTFATHER")
             UL = f"@{asst.me.username}"
             if (ultroid_bot.me.username) is None:
                 sir = ultroid_bot.me.first_name
             else:
                 sir = f"@{ultroid_bot.me.username}"
             await ultroid_bot.send_message(
-                Var.LOG_CHANNEL, "Auto Customization Started on @botfather"
+                chat_id, "Auto Customization Started on @botfather"
             )
             await asyncio.sleep(1)
             await ultroid_bot.send_message("botfather", "/cancel")
@@ -310,7 +403,7 @@ async def semxy():
             await ultroid_bot.send_message("botfather", "/start")
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
-                Var.LOG_CHANNEL, "**Auto Customization** Done at @BotFather"
+                chat_id, "**Auto Customization** Done at @BotFather"
             )
             LOGS.info("Customization Done")
     except Exception as e:
@@ -318,53 +411,56 @@ async def semxy():
 
 
 # some stuffs
-async def hehe():
-    if Var.LOG_CHANNEL:
-        try:
-            try:
-                await ultroid_bot(
-                    AddChatUserRequest(
-                        chat_id=Var.LOG_CHANNEL,
-                        user_id=asst.me.username,
-                        fwd_limit=10,
-                    ),
-                )
-            except BaseException:
-                try:
-                    await ultroid_bot(
-                        InviteToChannelRequest(
-                            channel=Var.LOG_CHANNEL, users=[asst.me.username]
-                        )
-                    )
-                except PeerIdInvalidError:
-                    LOGS.warning("WRONG CHANNEL/GROUP ID in LOG_CHANNEL Var")
-                except BaseException as ep:
-                    LOGS.info(ep)
-            MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
-            BTTS = None
-            updava = await AreUpdatesAvailable()
-            if updava:
-                BTTS = [[Button.inline(text="Update Available", data="updtavail")]]
-            await ultroid_bot.asst.send_message(Var.LOG_CHANNEL, MSG, buttons=BTTS)
-        except BaseException:
-            try:
-                MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
-                await ultroid_bot.send_message(Var.LOG_CHANNEL, MSG)
-            except PeerIdInvalidError:
-                LOGS.warning("WRONG CHANNEL/GROUP ID in LOG_CHANNEL Var")
-            except BaseException as ef:
-                LOGS.info(ef)
+async def ready():
     try:
+        chat_id = int(udB.get("LOG_CHANNEL"))
+        MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+        BTTS = None
+        updava = await updater()
+        if updava:
+            BTTS = [[Button.inline(text="Update Available", data="updtavail")]]
+        await ultroid_bot.asst.send_message(chat_id, MSG, buttons=BTTS)
+    except BaseException:
+        try:
+            MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+            await ultroid_bot.send_message(chat_id, MSG)
+        except Exception as ef:
+            LOGS.info(ef)
+    try:
+        # To Let Them know About New Updates and Changes
         await ultroid_bot(JoinChannelRequest("@FutureTechnologyOfficial"))
     except BaseException:
         pass
 
 
+if Var.HEROKU_APP_NAME:
+    ws = f"WEBSOCKET_URL=https://{Var.HEROKU_APP_NAME}.herokuapp.com"
+else:
+    ws = f"WEBSOCKET_URL=127.0.0.1"
+lg = f"LOG_CHANNEL={udB.get('LOG_CHANNEL')}"
+bt = f"BOT_TOKEN={udB.get('BOT_TOKEN')}"
+try:
+    with open(".env", "r") as x:
+        m = x.read()
+    if "WEBSOCKET_URL" not in m:
+        with open(".env", "a+") as t:
+            t.write("\n" + ws)
+    if "LOG_CHANNEL" not in m:
+        with open(".env", "a+") as t:
+            t.write("\n" + lg)
+    if "BOT_TOKEN" not in m:
+        with open(".env", "a+") as t:
+            t.write("\n" + bt)
+except BaseException:
+    with open(".env", "w") as t:
+        t.write(ws + "\n" + lg + "\n" + bt)
+
+
 if str(BOT_MODE) != "True":
-    ultroid_bot.loop.run_until_complete(semxy())
+    ultroid_bot.loop.run_until_complete(customize())
     if Plug_channel:
         ultroid_bot.loop.run_until_complete(plug())
-ultroid_bot.loop.run_until_complete(hehe())
+ultroid_bot.loop.run_until_complete(ready())
 
 LOGS.info(
     """
