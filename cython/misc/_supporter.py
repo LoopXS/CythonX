@@ -23,8 +23,8 @@ from logging import DEBUG, INFO, basicConfig, getLogger
 
 sedprint = logging.getLogger("CɪᴘʜᴇʀX")
 ALIVE_NAME = ultroid_bot.me.first_name
-BOTLOG = Var.LOG_CHANNEL
-BOTLOG_CHATID = Var.LOG_CHANNEL
+BOTLOG = int(udB.get("LOG_CHANNEL"))
+BOTLOG_CHATID = int(udB.get("LOG_CHANNEL"))
 
 
 bot = ultroid_bot
@@ -151,7 +151,7 @@ if ENV:
         TEMP_DOWNLOAD_DIRECTORY = TMP_DOWNLOAD_DIRECTORY
         TELEGRAPH_SHORT_NAME = os.environ.get("TELEGRAPH_SHORT_NAME", "CɪᴘʜᴇʀX")
         OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", None)
-        G_BAN_LOGGER_GROUP = Var.LOG_CHANNEL
+        G_BAN_LOGGER_GROUP = int(udB.get("LOG_CHANNEL"))
         GOOGLE_SEARCH_COUNT_LIMIT = int(os.environ.get("GOOGLE_SEARCH_COUNT_LIMIT", 9))
         TG_GLOBAL_ALBUM_LIMIT = int(os.environ.get("TG_GLOBAL_ALBUM_LIMIT", 9))
         TG_BOT_TOKEN_BF_HER = Var.BOT_TOKEN
@@ -174,8 +174,8 @@ if ENV:
         NC_LOG_P_M_S = bool(os.environ.get("NC_LOG_P_M_S", True))
         HEROKU_APP_NAME = Var.HEROKU_APP_NAME
         HEROKU_API_KEY = Var.HEROKU_API
-        PRIVATE_GROUP_BOT_API_ID = Var.LOG_CHANNEL
-        PM_LOGGR_BOT_API_ID = Var.LOG_CHANNEL
+        PRIVATE_GROUP_BOT_API_ID = int(udB.get("LOG_CHANNEL"))
+        PM_LOGGR_BOT_API_ID = int(udB.get("LOG_CHANNEL"))
         DB_URI = os.environ.get("DATABASE_URL", None)
         NO_OF_BUTTONS_DISPLAYED_IN_H_ME_CMD = int(
             os.environ.get("NO_OF_BUTTONS_DISPLAYED_IN_H_ME_CMD", 7)
