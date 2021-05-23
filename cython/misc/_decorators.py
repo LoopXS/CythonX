@@ -1,8 +1,6 @@
 import inspect
 import re
 import sys
-from asyncio import create_subprocess_shell as asyncsubshell
-from asyncio import subprocess as asyncsub
 from pathlib import Path
 from sys import *
 from time import gmtime, sleep, strftime
@@ -13,14 +11,17 @@ from telethon import *
 from telethon import __version__ as telever
 from telethon.errors.rpcerrorlist import (
     BotMethodInvalidError,
+    ChatSendInlineForbiddenError,
     FloodWaitError,
     MessageIdInvalidError,
     MessageNotModifiedError,
 )
+from telethon.utils import get_display_name
 
 from .. import *
 from ..dB.core import *
 from ..dB.database import Var
+from ..functions.all import bash
 from ..functions.all import time_formatter as tf
 from ..utils import *
 from ..version import __version__ as pyver
@@ -70,15 +71,6 @@ def ultroid_cmd(allow_sudo=on, **args):
     pattern = args["pattern"]
     groups_only = args.get("groups_only", False)
     admins_only = args.get("admins_only", False)
-    # args["outgoing"] = True
-
-    # if allow_sudo == "True":
-    #    args["from_users"] = sed
-    #    args["incoming"] = True if str(file_test) in sudoplugs else False
-    # elif allow_sudo == "False" and BOT_MODE:
-    #    args["from_users"] = [ultroid_bot.uid]
-    # else:
-    #    args["outgoing"] = True
 
     if pattern is not None:
         if pattern.startswith(r"\#"):
@@ -131,12 +123,13 @@ def ultroid_cmd(allow_sudo=on, **args):
             if not ult.out and (ult.sender_id not in sudos):
                 return
             chat = await ult.get_chat()
+            naam = get_display_name(chat)
             if ult.fwd_from:
                 return
             if groups_only and ult.is_private:
-                return await eod(ult, "`Use this in group/channel.`", time=3)
+                return await eod(ult, "`Use this in group/channel.`")
             if admins_only and not chat.admin_rights:
-                return await eod(ult, "`I'm not an admin.`", time=3)
+                return await eod(ult, "`I'm not an admin.`")
             try:
                 await func(ult)
             except MessageIdInvalidError:
@@ -145,19 +138,21 @@ def ultroid_cmd(allow_sudo=on, **args):
                 pass
             except FloodWaitError as fwerr:
                 await ultroid_bot.asst.send_message(
-                    Var.LOG_CHANNEL,
+                    int(udB.get("LOG_CHANNEL")),
                     f"`FloodWaitError:\n{str(fwerr)}\n\nSleeping for {tf((fwerr.seconds + 10)*1000)}`",
                 )
                 sleep(fwerr.seconds + 10)
                 await ultroid_bot.asst.send_message(
-                    Var.LOG_CHANNEL,
+                    int(udB.get("LOG_CHANNEL")),
                     "`CɪᴘʜᴇʀX Bot is working again`",
                 )
             except BotMethodInvalidError:
                 return await eor(
                     ult,
-                    "Seems Like You are using BOT_MODE\nYou cant Use This Command !",
+                    "`Seems Like You are using BOT_MODE\nYou cant Use This Command !`",
                 )
+            except ChatSendInlineForbiddenError:
+                return await eod(ult, "`Inline Locked in This Chat.`")
             except events.StopPropagation:
                 raise events.StopPropagation
             except KeyboardInterrupt:
@@ -183,9 +178,9 @@ def ultroid_cmd(allow_sudo=on, **args):
                 ftext += "\n\nError text:\n"
                 ftext += str(sys.exc_info()[1])
                 ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
-
-                if Var.LOG_CHANNEL:
-                    Placetosend = Var.LOG_CHANNEL
+                
+                if int(udB.get("LOG_CHANNEL")):
+                    Placetosend = int(udB.get("LOG_CHANNEL"))
                 else:
                     Placetosend = ultroid_bot.uid
                 await ultroid_bot.asst.send_message(
