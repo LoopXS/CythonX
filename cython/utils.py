@@ -68,13 +68,14 @@ def load_plugins(plugin_name):
         sys.modules["userbot.config"] = xxx
         spec.loader.exec_module(mod)
         sys.modules["plugins." + plugin_name] = mod
-        try:
-            PLUGINS.append(plugin_name)
-        except BaseException:
-            if plugin_name not in PLUGINS:
+        if not plugin_name.startswith("_"):
+            try:
                 PLUGINS.append(plugin_name)
-            else:
-                pass
+            except BaseException:
+                if plugin_name not in PLUGINS:
+                    PLUGINS.append(plugin_name)
+                else:
+                    pass
 
 
 # for addons
@@ -167,13 +168,14 @@ def load_addons(plugin_name):
         sys.modules["userbot.uniborgConfig"] = xxx
         spec.loader.exec_module(mod)
         sys.modules["addons." + plugin_name] = mod
-        try:
-            ADDONS.append(plugin_name)
-        except BaseException:
-            if plugin_name not in ADDONS:
+        if not plugin_name.startswith("_"):
+            try:
                 ADDONS.append(plugin_name)
-            else:
-                pass
+            except BaseException:
+                if plugin_name not in ADDONS:
+                    ADDONS.append(plugin_name)
+                else:
+                    pass
 
 
 # for assistant
