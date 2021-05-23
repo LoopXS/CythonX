@@ -1,4 +1,9 @@
+import re
+
 import setuptools
+
+with open("cython/version.py", "rt", encoding="utf8") as x:
+    version = re.search(r'__version__ = "(.*?)"', x.read()).group(1)
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -24,8 +29,9 @@ setuptools.setup(
         "telethon",
         "redis",
         "python-decouple==3.3",
-        "telethon-tgcrypto",
+        "TgCrypto",
         "python-dotenv==0.15.0",
+        "cloudscraper",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
