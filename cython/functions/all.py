@@ -1,15 +1,18 @@
 import asyncio
+import io
 import math
 import os
 import random
 import sys
 import time
+import traceback
 from math import sqrt
 from mimetypes import guess_type
 from os import execl
 from pathlib import Path
 from sys import executable
 
+import cloudscraper
 import heroku3
 import httplib2
 import requests
@@ -22,9 +25,9 @@ from googleapiclient.discovery import build
 from html_telegraph_poster import TelegraphPoster
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.file import Storage
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from telegraph import Telegraph
-from telethon import Button, events
+from telethon import events
 from telethon.errors import (
     ChannelInvalidError,
     ChannelPrivateError,
@@ -60,7 +63,7 @@ from ..utils import *
 from ._FastTelethon import download_file as downloadable
 from ._FastTelethon import upload_file as uploadable
 
-ultroid_version = "0.0.6"
+ultroid_version = "0.0.7"
 
 OAUTH_SCOPE = "https://www.googleapis.com/auth/drive.file"
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
@@ -70,6 +73,7 @@ G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 telegraph = Telegraph()
 telegraph.create_account(short_name="CɪᴘʜᴇʀX Bot Commands")
 
+request = cloudscraper.create_scraper()
 
 CMD_WEB = {
     "anonfiles": 'curl -F "file=@{}" https://api.anonfiles.com/upload',
@@ -82,11 +86,24 @@ CMD_WEB = {
 
 UPSTREAM_REPO_URL = "https://github.com/CipherX1-ops/Megatron"
 
-requirements_path = "resources/extras/local-requirements.txt"
+width_ratio = 0.7
+reqs = "resources/extras/local-requirements.txt"
+
+
+async def check_if_admin(message):
+    result = await message.client(
+        functions.channels.GetParticipantRequest(
+            channel=message.chat_id,
+            user_id=message.sender_id,
+        )
+    )
+    p = result.participant
+    return isinstance(p, types.ChannelParticipantCreator) or (
+        isinstance(p, types.ChannelParticipantAdmin)
+    )
 
 
 async def updateme_requirements():
-    reqs = str(requirements_path)
     try:
         process = await asyncio.create_subprocess_shell(
             " ".join([sys.executable, "-m", "pip", "install", "-r", reqs]),
@@ -114,57 +131,19 @@ async def gen_chlog(repo, diff):
         return ch_log, tldr_log
 
 
-async def AreUpdatesAvailable():
-    off_repo = UPSTREAM_REPO_URL
-    try:
-        repo = Repo()
-    except NoSuchPathError as error:
-        await ultroid_bot.asst.send_message(
-            Var.LOG_CHANNEL, f"{txt}\n`directory {error} is not found`"
-        )
-        repo.__del__()
-        return
-    except GitCommandError as error:
-        await ultroid_bot.asst.send_message(
-            Var.LOG_CHANNEL, f"{txt}\n`Early failure! {error}`"
-        )
-        repo.__del__()
-        return
-    except InvalidGitRepositoryError:
-        repo = Repo.init()
-        origin = repo.create_remote("upstream", off_repo)
-        origin.fetch()
-        repo.create_head("main", origin.refs.main)
-        repo.heads.main.set_tracking_branch(origin.refs.main)
-        repo.heads.main.checkout(True)
-    ac_br = repo.active_branch.name
-    try:
-        repo.create_remote("upstream", off_repo)
-    except BaseException:
-        pass
-    ups_rem = repo.remote("upstream")
-    ups_rem.fetch(ac_br)
-    changelog, tl_chnglog = await gen_chlog(repo, f"HEAD..upstream/{ac_br}")
-    if changelog:
-        Avali = True
-    else:
-        Avali = False
-    return Avali
-
-
 async def updater():
     off_repo = UPSTREAM_REPO_URL
     try:
         repo = Repo()
     except NoSuchPathError as error:
         await ultroid_bot.asst.send_message(
-            Var.LOG_CHANNEL, f"{txt}\n`directory {error} is not found`"
+            int(udB.get("LOG_CHANNEL")), f"{txt}\n`directory {error} is not found`"
         )
         repo.__del__()
         return
     except GitCommandError as error:
         await ultroid_bot.asst.send_message(
-            Var.LOG_CHANNEL, f"{txt}\n`Early failure! {error}`"
+            int(udB.get("LOG_CHANNEL")), f"{txt}\n`Early failure! {error}`"
         )
         repo.__del__()
         return
@@ -184,15 +163,9 @@ async def updater():
     ups_rem.fetch(ac_br)
     changelog, tl_chnglog = await gen_chlog(repo, f"HEAD..upstream/{ac_br}")
     if changelog:
-        msg = await ultroid_bot.asst.send_file(
-            Var.LOG_CHANNEL,
-            "resources/extras/new_thumb.jpg",
-            caption="**0.0.6 Update Available**",
-            force_document=True,
-            buttons=Button.inline("Changelogs", data="changes"),
-        )
+        msg = True
     else:
-        msg = None
+        msg = False
     return msg
 
 
@@ -246,11 +219,65 @@ def make_html_telegraph(title, author, text):
     return page["url"]
 
 
+# ------------------Logo Gen Helpers----------------
+
+
+def get_text_size(text, image, font):
+    im = Image.new("RGB", (image.width, image.height))
+    draw = ImageDraw.Draw(im)
+    return draw.textsize(text, font)
+
+
+def find_font_size(text, font, image, target_width_ratio):
+    tested_font_size = 100
+    tested_font = ImageFont.truetype(font, tested_font_size)
+    observed_width, observed_height = get_text_size(text, image, tested_font)
+    estimated_font_size = (
+        tested_font_size / (observed_width / image.width) * target_width_ratio
+    )
+    return round(estimated_font_size)
+
+
+# ------------------Logo Gen Helpers----------------
+
+
+def make_logo(imgpath, text, funt, **args):
+    fill = args.get("fill")
+    if args.get("width_ratio"):
+        width_ratio = args.get("width_ratio")
+    else:
+        width_ratio = width_ratio
+    stroke_width = int(args.get("stroke_width"))
+    stroke_fill = args.get("stroke_fill")
+
+    img = Image.open(imgpath)
+    width, height = img.size
+    draw = ImageDraw.Draw(img)
+    font_size = find_font_size(text, funt, img, width_ratio)
+    font = ImageFont.truetype(funt, font_size)
+    w, h = draw.textsize(text, font=font)
+    draw.text(
+        ((width - w) / 2, (height - h) / 2),
+        text,
+        font=font,
+        fill=fill,
+        stroke_width=stroke_width,
+        stroke_fill=stroke_fill,
+    )
+    file_name = "Logo.png"
+    img.save(f"./{file_name}", "PNG")
+    img.show()
+    return f"{file_name} Generated Successfully!"
+
+
 async def get_user_id(ids):
     if str(ids).isdigit():
         userid = int(ids)
     else:
-        userid = (await ultroid_bot.get_entity(ids)).id
+        try:
+            userid = (await ultroid_bot.get_entity(ids)).id
+        except Exception as exc:
+            return str(exc)
     return userid
 
 
@@ -379,12 +406,14 @@ def lucks(luck):
 
 
 async def ban_time(event, time_str):
-    if any(time_str.endswith(unit) for unit in ("m", "h", "d")):
+    if any(time_str.endswith(unit) for unit in ("s", "m", "h", "d")):
         unit = time_str[-1]
         time_int = time_str[:-1]
         if not time_int.isdigit():
             return await event.edit("Invalid time amount specified.")
-        if unit == "m":
+        if unit == "s":
+            bantime = int(time.time() + int(time_int))
+        elif unit == "m":
             bantime = int(time.time() + int(time_int) * 60)
         elif unit == "h":
             bantime = int(time.time() + int(time_int) * 60 * 60)
@@ -395,7 +424,7 @@ async def ban_time(event, time_str):
         return bantime
     else:
         return await event.edit(
-            "Invalid time type specified. Expected m,h, or d, got: {}".format(
+            "Invalid time type specified. Expected s, m,h, or d, got: {}".format(
                 time_int[-1]
             )
         )
@@ -406,7 +435,7 @@ async def ban_time(event, time_str):
 
 def list_files(http):
     drive = build("drive", "v2", http=http, cache_discovery=False)
-    x = drive.files().get(fileId="", supportsAllDrives=True).execute()
+    x = drive.files().get(fileId="").execute()
     files = {}
     for m in x["items"]:
         try:
@@ -431,7 +460,6 @@ async def gsearch(http, query, filename):
                 spaces="drive",
                 fields="nextPageToken, items(id, title, mimeType)",
                 pageToken=page_token,
-                supportsAllDrives=True,
             )
             .execute()
         )
@@ -470,11 +498,7 @@ async def create_directory(http, directory_name, parent_id):
     }
     if parent_id is not None:
         file_metadata["parents"] = [{"id": parent_id}]
-    file = (
-        drive_service.files()
-        .insert(body=file_metadata, supportsAllDrives=True)
-        .execute()
-    )
+    file = drive_service.files().insert(body=file_metadata).execute()
     file_id = file.get("id")
     drive_service.permissions().insert(fileId=file_id, body=permissions).execute()
     return file_id
@@ -543,7 +567,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
     media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
     body = {
         "title": file_name,
-        "description": "Uploaded using CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ...",
+        "description": "Uploaded using CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ",
         "mimeType": mime_type,
     }
     if parent_id is not None:
@@ -555,9 +579,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
         "withLink": True,
     }
     os.path.getsize(file_path)
-    file = drive_service.files().insert(
-        body=body, media_body=media_body, supportsAllDrives=True
-    )
+    file = drive_service.files().insert(body=body, media_body=media_body)
     times = time.time()
     response = None
     display_message = ""
@@ -730,15 +752,39 @@ async def restart(ult):
     if Var.HEROKU_APP_NAME and Var.HEROKU_API:
         try:
             Heroku = heroku3.from_key(Var.HEROKU_API)
+            app = Heroku.apps()[Var.HEROKU_APP_NAME]
+            await eor(ult, "`Restarting CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ, please wait...`")
+            app.restart()
         except BaseException:
             return await eor(
-                ult, "`HEROKU_API` is wrong! Kindly re-check in config vars."
+                ult,
+                "`HEROKU_API` or `HEROKU_APP_NAME` is wrong! Kindly re-check in config vars.",
             )
-        await eor(ult, "`Restarting CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ, please wait...`")
-        app = Heroku.apps()[Var.HEROKU_APP_NAME]
-        app.restart()
     else:
         execl(executable, executable, "-m", "cython")
+
+
+def vcdyno(action):
+    if Var.HEROKU_APP_NAME and Var.HEROKU_API:
+        try:
+            Heroku = heroku3.from_key(Var.HEROKU_API)
+            app = Heroku.apps()[Var.HEROKU_APP_NAME]
+        except BaseException:
+            return "`HEROKU_API` and `HEROKU_APP_NAME` is wrong! Kindly re-check in config vars."
+        if action.lower() == "off":
+            try:
+                app.process_formation()["web"].scale(0)
+            except Exception as e:
+                return str(e)
+        elif action.lower() == "on":
+            try:
+                app.process_formation()["web"].scale(1)
+            except Exception as e:
+                return str(e)
+
+
+# calling vcdyno off on start to save dynos
+print(vcdyno("off"))
 
 
 async def shutdown(ult, dynotype=["web", "worker"]):
@@ -855,7 +901,7 @@ async def get_full_user(event):
     else:
         input_str = None
         try:
-            input_str = event.pattern_match.group(1)
+            input_str = await get_user_id(event.pattern_match.group(1))
         except IndexError as e:
             return None, e
         if event.message.entities is not None:
@@ -867,7 +913,7 @@ async def get_full_user(event):
                 return replied_user, None
             else:
                 try:
-                    user_object = await event.client.get_entity(input_str)
+                    user_object = await event.client.get_entity(int(input_str))
                     user_id = user_object.id
                     replied_user = await event.client(GetFullUserRequest(user_id))
                     return replied_user, None
@@ -1286,6 +1332,38 @@ async def bash(cmd):
     err = stderr.decode().strip()
     out = stdout.decode().strip()
     return out, err
+
+
+async def calcc(cmd, event):
+    wtf = f"print({cmd})"
+    old_stderr = sys.stderr
+    old_stdout = sys.stdout
+    redirected_output = sys.stdout = io.StringIO()
+    redirected_error = sys.stderr = io.StringIO()
+    stdout, stderr, exc = None, None, None
+    try:
+        await aexecc(wtf, event)
+    except Exception:
+        exc = traceback.format_exc()
+    stdout = redirected_output.getvalue()
+    stderr = redirected_error.getvalue()
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
+    evaluation = ""
+    if exc:
+        evaluation = exc
+    elif stderr:
+        evaluation = stderr
+    elif stdout:
+        evaluation = stdout
+    else:
+        evaluation = "Success"
+    return evaluation
+
+
+async def aexecc(code, event):
+    exec(f"async def __aexecc(event): " + "".join(f"\n {l}" for l in code.split("\n")))
+    return await locals()["__aexecc"](event)
 
 
 def mediainfo(media):
