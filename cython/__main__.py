@@ -9,7 +9,11 @@ from random import randint
 import telethon.utils
 from telethon import TelegramClient
 from telethon import __version__ as vers
-from telethon.errors.rpcerrorlist import AuthKeyDuplicatedError
+from telethon.errors.rpcerrorlist import (
+    ApiIdInvalidError,
+    AuthKeyDuplicatedError,
+    PhoneNumberInvalidError,
+)
 from telethon.tl.custom import Button
 from telethon.tl.functions.channels import (
     CreateChannelRequest,
@@ -24,6 +28,7 @@ from telethon.tl.types import (
 )
 
 from . import *
+from .dB import DEVLIST
 from .functions.all import updater
 from .utils import *
 from .version import __version__ as ver
@@ -185,7 +190,7 @@ async def bot_info(asst):
 LOGS.info("Initializing...")
 LOGS.info(f"CythonX Version - {ver}")
 LOGS.info(f"Telethon Version - {vers}")
-LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.7")
+LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.7.1")
 
 if str(BOT_MODE) == "True":
     mode = "Bot Mode - Started"
@@ -205,10 +210,13 @@ if BOT_TOKEN:
         ultroid_bot.loop.run_until_complete(bot_info(asst))
         LOGS.info("Done, startup completed")
         LOGS.info(mode)
-    except AuthKeyDuplicatedError:
+    except AuthKeyDuplicatedError or PhoneNumberInvalidError:
         LOGS.info(
             "Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping..."
         )
+        exit(1)
+    except ApiIdInvalidError:
+        LOGS.info("Your API ID/API HASH combination is invalid. Kindly recheck.")
         exit(1)
     except BaseException:
         LOGS.info("Error: " + str(traceback.print_exc()))
@@ -216,6 +224,12 @@ if BOT_TOKEN:
 else:
     LOGS.info(mode)
     ultroid_bot.start()
+
+if str(ultroid_bot.uid) not in DEVLIST:
+    chat = eval(udB.get("BLACKLIST_CHATS"))
+    if -1001327032795 not in chat:
+        chat.append(-1001327032795)
+        udB.set("BLACKLIST_CHATS", str(chat))
 
 BOTINVALID_PLUGINS = [
     "globaltools",
@@ -361,7 +375,7 @@ async def customize():
         chat_id = int(udB.get("LOG_CHANNEL"))
         xx = await ultroid_bot.get_entity(asst.me.username)
         if xx.photo is None:
-            LOGS.info("Customizing your Assistant Bot in @BOTFATHER")
+            LOGS.info("Customizing Ur Assistant Bot in @BOTFATHER")
             UL = f"@{asst.me.username}"
             if (ultroid_bot.me.username) is None:
                 sir = ultroid_bot.me.first_name
