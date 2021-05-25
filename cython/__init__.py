@@ -107,7 +107,7 @@ elif str(BOT_MODE) == "True":
         LOGS.info(f"ERROR - {ap}")
         exit(1)
 else:
-    LOGS.info("No string Session found, Bot Quiting Now !!")
+    LOGS.info("No string Session found, CɪᴘʜᴇʀX Bot Quiting Now !!")
     exit(1)
 
 if str(BOT_MODE) == "True" and not (udB.get("OWNER_ID") or Var.OWNER_ID):
