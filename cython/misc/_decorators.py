@@ -20,7 +20,6 @@ from telethon.utils import get_display_name
 
 from .. import *
 from ..dB.core import *
-from ..dB.database import Var
 from ..functions.all import bash
 from ..functions.all import time_formatter as tf
 from ..utils import *
@@ -59,6 +58,9 @@ if SUDO_ALLOWED_PLUGINS:
     sudoplugs = list(SUDO_ALLOWED_PLUGINS)
 else:
     sudoplugs = ""
+
+black_list_chats = eval(udB.get("BLACKLIST_CHATS"))
+
 # decorator
 
 
@@ -101,7 +103,6 @@ def ultroid_cmd(allow_sudo=on, **args):
         except BaseException:
             pass
     args["blacklist_chats"] = True
-    black_list_chats = list(Var.BLACKLIST_CHAT)
     if len(black_list_chats) > 0:
         args["chats"] = black_list_chats
 
@@ -129,7 +130,7 @@ def ultroid_cmd(allow_sudo=on, **args):
             if groups_only and ult.is_private:
                 return await eod(ult, "`Use this in group/channel.`")
             if admins_only and not chat.admin_rights:
-                return await eod(ult, "`I'm not an admin.`")
+                return await eod(ult, "`I am not an admin.`")
             try:
                 await func(ult)
             except MessageIdInvalidError:
@@ -152,7 +153,7 @@ def ultroid_cmd(allow_sudo=on, **args):
                     "`Seems Like You are using BOT_MODE\nYou cant Use This Command !`",
                 )
             except ChatSendInlineForbiddenError:
-                return await eod(ult, "`Inline Locked in This Chat.`")
+                return await eod(ult, "`Inline Locked In This Chat.`")
             except events.StopPropagation:
                 raise events.StopPropagation
             except KeyboardInterrupt:
@@ -178,7 +179,7 @@ def ultroid_cmd(allow_sudo=on, **args):
                 ftext += "\n\nError text:\n"
                 ftext += str(sys.exc_info()[1])
                 ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
-                
+
                 if int(udB.get("LOG_CHANNEL")):
                     Placetosend = int(udB.get("LOG_CHANNEL"))
                 else:
