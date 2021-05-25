@@ -17,7 +17,6 @@ from ..dB.core import *
 from ..dB.database import Var
 from ..functions.sudos import *
 from ..utils import *
-
 import logging
 from logging import DEBUG, INFO, basicConfig, getLogger
 
@@ -48,6 +47,8 @@ hndlr = "\\" + HNDLR
 
 def admin_cmd(pattern=None, command=None, **args):
     args["func"] = lambda e: e.via_bot_id is None
+    args["chats"] = black_list_chats
+    args["blacklist_chats"] = True
     stack = inspect.stack()
     previous_stack_frame = stack[1]
     file_test = Path(previous_stack_frame.filename)
@@ -96,6 +97,8 @@ register = ultroid_cmd
 
 def sudo_cmd(allow_sudo=True, pattern=None, command=None, **args):
     args["func"] = lambda e: e.via_bot_id is None
+    args["chats"] = black_list_chats
+    args["blacklist_chats"] = True
     stack = inspect.stack()
     previous_stack_frame = stack[1]
     file_test = Path(previous_stack_frame.filename)
