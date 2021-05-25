@@ -60,6 +60,9 @@ except ConnectionError as ce:
 except ResponseError as res:
     LOGS.info(f"ERROR - {res}")
     exit(1)
+except Exception as er:
+    LOGS.info(f"ERROR - {er}")
+    exit(1)
 
 START_TIME = datetime.now()
 
@@ -81,9 +84,9 @@ except BaseException:
         LOGS.info("Redis Connection Failed.....")
         exit()
     else:
-        LOGS.info("Reconnected To Redis Server Succesfully")
+        LOGS.info("Reconnected To Redis Server Successfully")
 
-LOGS.info("Succesfully Established Connection With Redis DataBase.")
+LOGS.info("Successfully Established Connection With Redis DataBase.")
 
 BOT_MODE = Var.BOT_MODE or udB.get("BOT_MODE")
 
@@ -104,7 +107,7 @@ elif str(BOT_MODE) == "True":
         LOGS.info(f"ERROR - {ap}")
         exit(1)
 else:
-    LOGS.info("No string Session found, CɪᴘʜᴇʀX Bot Quiting Now !!")
+    LOGS.info("No string Session found, Bot Quiting Now !!")
     exit(1)
 
 if str(BOT_MODE) == "True" and not (udB.get("OWNER_ID") or Var.OWNER_ID):
@@ -120,8 +123,11 @@ else:
 if not udB.get("SUDO"):
     udB.set("SUDO", "False")
 
-if udB.get("SUDOS") is None:
-    udB.set("SUDOS", "1")
+if not udB.get("SUDOS"):
+    udB.set("SUDOS", "777000")
+
+if not udB.get("BLACKLIST_CHATS"):
+    udB.set("BLACKLIST_CHATS", "[]")
 
 if udB.get("VC_SESSION"):
     try:
