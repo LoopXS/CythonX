@@ -20,7 +20,7 @@ MSG = f"""
 **Owner**: CɪᴘʜᴇʀX
 **✨ CɪᴘʜᴇʀX is the best ✨**
 ✵✵✵✵✵✵✵✵✵✵✵✵✵✵
-"""➖➖➖➖➖➖➖
+➖➖➖➖➖➖➖
 """
 
 # decorator for assistant
