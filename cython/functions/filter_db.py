@@ -63,11 +63,11 @@ def get_filter(chat):
     if not fl:
         return None
     rt = fl.split("|||")
-    k = ""
+    k = []
     for on in rt:
         er = on.split("$|")
         if str(er[0]) == str(chat):
-            k += str(er[1]) + " "
+            k.append(er[1])
     if k:
         return k
     return
