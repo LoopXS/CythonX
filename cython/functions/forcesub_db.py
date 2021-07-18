@@ -1,6 +1,6 @@
 import ast
 
-from . import udB
+from .. import udB
 
 
 def get_chats():
