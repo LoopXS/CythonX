@@ -1,4 +1,4 @@
-from cython import udB
+from .. import udB
 
 
 def str_to_list(text):
