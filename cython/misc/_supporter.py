@@ -1,26 +1,18 @@
-import functools
 import inspect
 import os
 import re
 from pathlib import Path
-from sys import *
 
 from plugins import *
-from telethon import *
-from telethon.tl.types import ChatBannedRights
+from telethon import events, types
 
 from cython.misc._decorators import *
-from cython.misc._wrappers import *
+from cython.misc._wrappers import eod, eor
 
-from .. import *
-from ..dB.core import *
+from .. import udB, ultroid_bot
+from ..dB.core import LIST
 from ..dB.database import Var
-from ..functions.sudos import *
-from ..utils import *
-import logging
-from logging import DEBUG, INFO, basicConfig, getLogger
 
-sedprint = logging.getLogger("CɪᴘʜᴇʀX")
 ALIVE_NAME = ultroid_bot.me.first_name
 BOTLOG = int(udB.get("LOG_CHANNEL"))
 BOTLOG_CHATID = int(udB.get("LOG_CHANNEL"))
@@ -31,22 +23,11 @@ borg = ultroid_bot
 friday = ultroid_bot
 jarvis = ultroid_bot
 
-ok = udB.get("SUDOS")
-if ok:
-    SUDO_USERS = set(int(x) for x in ok.split())
-else:
-    SUDO_USERS = ""
-
-if SUDO_USERS:
-    sudos = list(SUDO_USERS)
-else:
-    sudos = ""
-
 hndlr = "\\" + HNDLR
 
 
 def admin_cmd(pattern=None, command=None, **args):
-    args["func"] = lambda e: e.via_bot_id is None
+    args["func"] = lambda e: not e.via_bot_id and not e.fwd_from
     args["chats"] = black_list_chats
     args["blacklist_chats"] = True
     stack = inspect.stack()
@@ -96,7 +77,7 @@ register = ultroid_cmd
 
 
 def sudo_cmd(allow_sudo=True, pattern=None, command=None, **args):
-    args["func"] = lambda e: e.via_bot_id is None
+    args["func"] = lambda e: not e.via_bot_id and not e.fwd_from
     args["chats"] = black_list_chats
     args["blacklist_chats"] = True
     stack = inspect.stack()
@@ -109,32 +90,18 @@ def sudo_cmd(allow_sudo=True, pattern=None, command=None, **args):
         else:
             args["pattern"] = re.compile(hndlr + pattern)
     if allow_sudo:
-        args["from_users"] = SUDO_USERS
+        args["from_users"] = [int(user) for user in sudoers()]
         args["incoming"] = True
     if "allow_edited_updates" in args and args["allow_edited_updates"]:
         del args["allow_edited_updates"]
     return events.NewMessage(**args)
 
 
-def sudo():
-    def decorator(function):
-        @functools.wraps(function)
-        async def wrapper(event):
-            if event.sender_id == ultroid_bot.uid or is_sudo(event.sender_id):
-                await function(event)
-            else:
-                pass
-
-        return wrapper
-
-    return decorator
-
-
 edit_or_reply = eor
 edit_delete = eod
 
 #   To Install Other UB plugins
-#   CɪᴘʜᴇʀX Bot Doesn't Need This Configs
+#   CipherX Bot Don't Need This Configs
 
 ENV = bool(os.environ.get("ENV", False))
 if ENV:
@@ -161,9 +128,11 @@ if ENV:
         TG_BOT_USER_NAME_BF_HER = asst.me.username
         DUAL_LOG = os.environ.get("DUAL_LOG", None)
         MAX_MESSAGE_SIZE_LIMIT = 4095
-        UB_BLACK_LIST_CHAT = Var.BLACKLIST_CHAT
+        UB_BLACK_LIST_CHAT = [
+            int(blacklist) for blacklist in udB.get("BLACKLIST_CHATS")
+        ]
         MAX_ANTI_FLOOD_MESSAGES = 10
-        ANTI_FLOOD_WARN_MODE = ChatBannedRights(
+        ANTI_FLOOD_WARN_MODE = types.ChatBannedRights(
             until_date=None, view_messages=None, send_messages=True
         )
         CHATS_TO_MONITOR_FOR_ANTI_FLOOD = []
