@@ -1,8 +1,7 @@
 import asyncio
 import functools
 
-from .. import *
-from ..functions.sudos import *
+from . import sudoers
 
 # edit/reply & delete
 
@@ -12,7 +11,7 @@ async def eod(event, text=None, **args):
     time = args.get("time", 5)
     link_preview = args.get("link_preview", False)
     parse_mode = args.get("parse_mode", "md")
-    if is_sudo(event.sender_id) or (BOT_MODE and event.sender_id == ultroid_bot.uid):
+    if not event.out:
         replied = await event.get_reply_message()
         if replied:
             ult = await replied.reply(
@@ -37,7 +36,7 @@ def sudo():
     def decorator(function):
         @functools.wraps(function)
         async def wrapper(event):
-            if event.sender_id == ultroid_bot.uid or is_sudo(event.sender_id):
+            if event.out or str(event.sender_id) in sudoers():
                 await function(event)
             else:
                 pass
@@ -54,7 +53,7 @@ async def eor(event, text, **omk):
     link_preview = omk.get("link_preview", False)
     parse_mode = omk.get("parse_mode", "md")
     time = omk.get("time", None)
-    if is_sudo(event.sender_id) or (BOT_MODE and event.sender_id == ultroid_bot.uid):
+    if not event.out:
         reply_to = await event.get_reply_message()
         if reply_to:
             ok = await reply_to.reply(
