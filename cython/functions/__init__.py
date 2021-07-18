@@ -1,7 +1,3 @@
-from cython import *
-
-from ..dB.database import Var
-
 DANGER = [
     "SESSION",
     "HEROKU_API",
@@ -16,4 +12,7 @@ DANGER = [
     "sys.stdout",
     "sys.stderr",
     "subprocess",
+    "await locals()",
+    "aexec",
+    ".session.save()",
 ]
