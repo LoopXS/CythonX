@@ -1,17 +1,20 @@
 import asyncio
-import glob
+import multiprocessing
 import os
+import time
 import traceback
 import urllib
 from pathlib import Path
 from random import randint
+from urllib.request import urlretrieve
 
-import telethon.utils
-from telethon import TelegramClient
-from telethon import __version__ as vers
+from pyrogram import idle
+from pytz import timezone
 from telethon.errors.rpcerrorlist import (
+    AccessTokenExpiredError,
     ApiIdInvalidError,
     AuthKeyDuplicatedError,
+    ChannelsTooMuchError,
     PhoneNumberInvalidError,
 )
 from telethon.tl.custom import Button
@@ -21,6 +24,7 @@ from telethon.tl.functions.channels import (
     EditPhotoRequest,
     JoinChannelRequest,
 )
+from telethon.tl.functions.contacts import UnblockRequest
 from telethon.tl.types import (
     ChatAdminRights,
     InputChatUploadedPhoto,
@@ -29,9 +33,10 @@ from telethon.tl.types import (
 
 from . import *
 from .dB import DEVLIST
+from .dB.database import Var
 from .functions.all import updater
-from .utils import *
-from .version import __version__ as ver
+from .loader import plugin_loader
+from .utils import load_addons
 
 x = ["resources/auths", "resources/downloads", "addons"]
 for x in x:
@@ -39,11 +44,29 @@ for x in x:
         os.mkdir(x)
 
 if udB.get("CUSTOM_THUMBNAIL"):
-    os.system(f"wget {udB.get('CUSTOM_THUMBNAIL')} -O resources/extras/cipherx.jpg")
+    urlretrieve(udB.get("CUSTOM_THUMBNAIL"), "resources/extras/cipherx.jpg")
 
 if udB.get("GDRIVE_TOKEN"):
     with open("resources/auths/auth_token.txt", "w") as t_file:
         t_file.write(udB.get("GDRIVE_TOKEN"))
+
+if udB.get("MEGA_MAIL") and udB.get("MEGA_PASS"):
+    with open(".megarc", "w") as mega:
+        mega.write(
+            f'[Login]\nUsername = {udB.get("MEGA_MAIL")}\nPassword = {udB.get("MEGA_PASS")}'
+        )
+
+if udB.get("TIMEZONE"):
+    try:
+        timezone(udB.get("TIMEZONE"))
+        os.environ["TZ"] = udB.get("TIMEZONE")
+        time.tzset()
+    except BaseException:
+        LOGS.info(
+            "Incorrect Timezone ,\nCheck Available Timezone\nSo Time is Default Iran"
+        )
+        os.environ["TZ"] = "Iran"
+        time.tzset()
 
 
 async def autobot():
@@ -51,22 +74,41 @@ async def autobot():
     if Var.BOT_TOKEN:
         udB.set("BOT_TOKEN", str(Var.BOT_TOKEN))
         return
+    if udB.get("BOT_TOKEN"):
+        return
     LOGS.info("MAKING A TELEGRAM BOT FOR YOU AT @BotFather , Please Kindly Wait")
     who = await ultroid_bot.get_me()
     name = who.first_name + "'s Assistant Bot"
     if who.username:
         username = who.username + "_bot"
     else:
-        username = "ultroid_" + (str(who.id))[5:] + "_bot"
+        username = "CipherX" + (str(who.id))[5:] + "_bot"
     bf = "Botfather"
+    await ultroid_bot(UnblockRequest(bf))
     await ultroid_bot.send_message(bf, "/cancel")
     await asyncio.sleep(1)
     await ultroid_bot.send_message(bf, "/start")
     await asyncio.sleep(1)
     await ultroid_bot.send_message(bf, "/newbot")
     await asyncio.sleep(1)
+    isdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
+    if isdone.startswith("That I cannot do."):
+        LOGS.info(
+            "Please make a Bot from @BotFather and add it's token in BOT_TOKEN, as an env var and restart me."
+        )
+        exit(1)
     await ultroid_bot.send_message(bf, name)
     await asyncio.sleep(1)
+    isdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
+    if not isdone.startswith("Good."):
+        await ultroid_bot.send_message(bf, "My Assistant Bot")
+        await asyncio.sleep(1)
+        isdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
+        if not isdone.startswith("Good."):
+            LOGS.info(
+                "Please make a Bot from @BotFather and add it's token in BOT_TOKEN, as an env var and restart me."
+            )
+            exit(1)
     await ultroid_bot.send_message(bf, username)
     await asyncio.sleep(1)
     isdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
@@ -107,49 +149,48 @@ async def autobot():
         exit(1)
 
 
-if not udB.get("BOT_TOKEN") and str(BOT_MODE) != "True":
+if not udB.get("BOT_TOKEN"):
     ultroid_bot.loop.run_until_complete(autobot())
 
 
-async def istart(ult):
-    await ultroid_bot.start(ult)
+async def istart():
     ultroid_bot.me = await ultroid_bot.get_me()
-    ultroid_bot.uid = telethon.utils.get_peer_id(ultroid_bot.me)
+    ultroid_bot.uid = ultroid_bot.me.id
     ultroid_bot.first_name = ultroid_bot.me.first_name
     if not ultroid_bot.me.bot:
         udB.set("OWNER_ID", ultroid_bot.uid)
-    if str(BOT_MODE) == "True":
-        if Var.OWNER_ID:
-            OWNER = await ultroid_bot.get_entity(Var.OWNER_ID)
-            ultroid_bot.me = OWNER
-            asst.me = OWNER
-            ultroid_bot.uid = OWNER.id
-            ultroid_bot.first_name = OWNER.first_name
-        elif udB.get("OWNER_ID"):
-            OWNER = await ultroid_bot.get_entity(int(udB.get("OWNER_ID")))
-            ultroid_bot.me = OWNER
-            asst.me = OWNER
-            ultroid_bot.uid = OWNER.id
-            ultroid_bot.first_name = OWNER.first_name
 
 
 async def autopilot():
-    await ultroid_bot.start()
     if Var.LOG_CHANNEL and str(Var.LOG_CHANNEL).startswith("-100"):
         udB.set("LOG_CHANNEL", str(Var.LOG_CHANNEL))
+    k = []  # To Refresh private ids
+    async for x in ultroid_bot.iter_dialogs():
+        k.append(x.id)
     if udB.get("LOG_CHANNEL"):
         try:
             await ultroid_bot.get_entity(int(udB.get("LOG_CHANNEL")))
             return
         except BaseException:
             udB.delete("LOG_CHANNEL")
-    r = await ultroid_bot(
-        CreateChannelRequest(
-            title="My CɪᴘʜᴇʀX Bot Logs",
-            about="My CɪᴘʜᴇʀX Bot Log Group",
-            megagroup=True,
-        ),
-    )
+    try:
+        r = await ultroid_bot(
+            CreateChannelRequest(
+                title="My CɪᴘʜᴇʀX Bot Logs",
+                about="My CɪᴘʜᴇʀX Bot Log Group",
+                megagroup=True,
+            ),
+        )
+    except ChannelsTooMuchError:
+        LOGS.info(
+            "You Are On Too Many Channels & Groups , Leave some And Restart The Bot"
+        )
+        exit(1)
+    except BaseException:
+        LOGS.info(
+            "Something Went Wrong , Create A Group and set its id on config var LOG_CHANNEL."
+        )
+        exit(1)
     chat_id = r.chats[0].id
     if not str(chat_id).startswith("-100"):
         udB.set("LOG_CHANNEL", "-100" + str(chat_id))
@@ -178,52 +219,40 @@ async def autopilot():
         os.remove(pfpa)
 
 
-ultroid_bot.asst = None
-
-
-async def bot_info(asst):
-    await asst.start()
+async def bot_info():
     asst.me = await asst.get_me()
     return asst.me
 
 
 LOGS.info("Initializing...")
-LOGS.info(f"CythonX Version - {ver}")
-LOGS.info(f"Telethon Version - {vers}")
-LOGS.info("CɪᴘʜᴇʀX Bot Version - 0.0.7.1")
 
-if str(BOT_MODE) == "True":
-    mode = "Bot Mode - Started"
-else:
-    mode = "User Mode - Started"
 
 # log in
 BOT_TOKEN = udB.get("BOT_TOKEN")
-if BOT_TOKEN:
-    LOGS.info("Starting CɪᴘʜᴇʀX Bot...")
-    try:
-        ultroid_bot.asst = TelegramClient(
-            None, api_id=Var.API_ID, api_hash=Var.API_HASH
-        ).start(bot_token=BOT_TOKEN)
-        asst = ultroid_bot.asst
-        ultroid_bot.loop.run_until_complete(istart(asst))
-        ultroid_bot.loop.run_until_complete(bot_info(asst))
-        LOGS.info("Done, startup completed")
-        LOGS.info(mode)
-    except AuthKeyDuplicatedError or PhoneNumberInvalidError:
-        LOGS.info(
-            "Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping..."
-        )
-        exit(1)
-    except ApiIdInvalidError:
-        LOGS.info("Your API ID/API HASH combination is invalid. Kindly recheck.")
-        exit(1)
-    except BaseException:
-        LOGS.info("Error: " + str(traceback.print_exc()))
-        exit(1)
-else:
-    LOGS.info(mode)
+LOGS.info("Starting CɪᴘʜᴇʀX Bot...")
+try:
+    asst.start(bot_token=BOT_TOKEN)
     ultroid_bot.start()
+    ultroid_bot.loop.run_until_complete(istart())
+    ultroid_bot.loop.run_until_complete(bot_info())
+    LOGS.info("Done, startup completed")
+    LOGS.info("Assistant - Started")
+except (AuthKeyDuplicatedError, PhoneNumberInvalidError, EOFError):
+    LOGS.info("Session String expired. Please create a new one! CɪᴘʜᴇʀX Bot is stopping...")
+    exit(1)
+except ApiIdInvalidError:
+    LOGS.info("Your API ID/API HASH combination is invalid. Kindly recheck.")
+    exit(1)
+except AccessTokenExpiredError:
+    udB.delete("BOT_TOKEN")
+    LOGS.info(
+        "BOT_TOKEN expired , So Quitted The Process, Restart Again To create A new Bot. Or Set BOT_TOKEN env In Vars"
+    )
+    exit(1)
+except BaseException:
+    LOGS.info("Error: " + str(traceback.print_exc()))
+    exit(1)
+
 
 if str(ultroid_bot.uid) not in DEVLIST:
     chat = eval(udB.get("BLACKLIST_CHATS"))
@@ -231,101 +260,20 @@ if str(ultroid_bot.uid) not in DEVLIST:
         chat.append(-1001327032795)
         udB.set("BLACKLIST_CHATS", str(chat))
 
-BOTINVALID_PLUGINS = [
-    "globaltools",
-    "autopic",
-    "pmpermit",
-    "fedutils",
-    "_userlogs",
-    "webupload",
-    "clone",
-    "inlinefun",
-    "tscan",
-    "animedb",
-    "limited",
-    "quotly",
-    "findsong",
-    "sticklet",
-]
+ultroid_bot.loop.run_until_complete(autopilot())
 
-if str(BOT_MODE) != "True":
-    ultroid_bot.loop.run_until_complete(autopilot())
-
-# for userbot
-path = "plugins/*.py"
-files = glob.glob(path)
-for name in files:
-    with open(name) as a:
-        patt = Path(a.name)
-        plugin_name = patt.stem
-        try:
-            if str(BOT_MODE) == "True" and plugin_name in BOTINVALID_PLUGINS:
-                LOGS.info(
-                    f"CɪᴘʜᴇʀX Bot - Official - BOT_MODE_INVALID_PLUGIN - {plugin_name}"
-                )
-            else:
-                load_plugins(plugin_name.replace(".py", ""))
-                if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                    LOGS.info(f"CɪᴘʜᴇʀX Bot - Official -  Installed - {plugin_name}")
-        except Exception:
-            LOGS.info(f"CɪᴘʜᴇʀX Bot - Official - ERROR - {plugin_name}")
-            LOGS.info(str(traceback.print_exc()))
-
-
-# for addons
+pmbot = udB.get("PMBOT")
+manager = udB.get("MANAGER")
 addons = udB.get("ADDONS")
-if addons == "True" or addons is None:
-    try:
-        os.system("git clone https://github.com/CipherX1-ops/Megatron-addons.git addons/")
-    except BaseException:
-        pass
-    LOGS.info("Installing packages for addons")
-    os.system("pip install -r addons/addons.txt")
-    path = "addons/*.py"
-    files = glob.glob(path)
-    for name in files:
-        with open(name) as a:
-            patt = Path(a.name)
-            plugin_name = patt.stem
-            try:
-                if str(BOT_MODE) == "True" and plugin_name in BOTINVALID_PLUGINS:
-                    LOGS.info(
-                        f"CɪᴘʜᴇʀX Bot - Addons - BOT_MODE_INVALID_PLUGIN - {plugin_name}"
-                    )
-                else:
-                    load_addons(plugin_name.replace(".py", ""))
-                    if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                        LOGS.info(f"CɪᴘʜᴇʀX Bot - Addons - Installed - {plugin_name}")
-            except Exception as e:
-                LOGS.info(f"CɪᴘʜᴇʀX Bot - Addons - ERROR - {plugin_name}")
-                LOGS.info(str(e))
-else:
-    os.system("cp plugins/__init__.py addons/")
+vcbot = udB.get("VC_SESSION") or Var.VC_SESSION
 
+plugin_loader(addons=addons, pmbot=pmbot, manager=manager, vcbot=vcbot)
 
-# for assistant
-path = "assistant/*.py"
-files = glob.glob(path)
-for name in files:
-    with open(name) as a:
-        patt = Path(a.name)
-        plugin_name = patt.stem
-        try:
-            load_assistant(plugin_name.replace(".py", ""))
-            if not plugin_name.startswith("__") or plugin_name.startswith("_"):
-                LOGS.info(f"CɪᴘʜᴇʀX Bot - Assistant - Installed - {plugin_name}")
-        except Exception as e:
-            LOGS.info(f"CɪᴘʜᴇʀX Bot - Assistant - ERROR - {plugin_name}")
-            LOGS.info(str(e))
-
-# for channel plugin
+# for channel plugins
 Plug_channel = udB.get("PLUGIN_CHANNEL")
 if Plug_channel:
 
     async def plug():
-        if str(BOT_MODE) == "True":
-            LOGS.info("PLUGIN_CHANNEL Can't be used in BOT_MODE")
-            return
         try:
             if Plug_channel.startswith("@"):
                 chat = Plug_channel
@@ -355,18 +303,6 @@ if Plug_channel:
             LOGS.info(str(e))
 
 
-# chat via assistant
-pmbot = udB.get("PMBOT")
-if pmbot == "True":
-    path = "assistant/pmbot/*.py"
-    files = glob.glob(path)
-    for name in files:
-        with open(name) as a:
-            patt = Path(a.name)
-            plugin_name = patt.stem
-            load_pmbot(plugin_name.replace(".py", ""))
-    LOGS.info(f"CɪᴘʜᴇʀX Bot - PM Bot Message Forwards - Enabled.")
-
 # customize assistant
 
 
@@ -394,7 +330,7 @@ async def customize():
             await ultroid_bot.send_message("botfather", UL)
             await asyncio.sleep(1)
             await ultroid_bot.send_file(
-                "botfather", "resources/extras/ultroid_assistant.jpg"
+                "botfather", "resources/extras/cipherx.jpg"
             )
             await asyncio.sleep(2)
             await ultroid_bot.send_message("botfather", "/setabouttext")
@@ -411,78 +347,66 @@ async def customize():
             await asyncio.sleep(1)
             await ultroid_bot.send_message(
                 "botfather",
-                f"✨ PowerFul CɪᴘʜᴇʀX Assistant Bot ✨\n✨ Master ~ {sir} ✨\n\n✨ Powered By ~ CɪᴘʜᴇʀX ✨",
+                f"✨ PowerFul CɪᴘʜᴇʀX Assistant Bot ✨\n✨ Master ~ {sir} ✨\n\n✨ Powered By ~ CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ ✨",
             )
             await asyncio.sleep(2)
-            await ultroid_bot.send_message("botfather", "/start")
-            await asyncio.sleep(1)
             await ultroid_bot.send_message(
                 chat_id, "**Auto Customization** Done at @BotFather"
             )
             LOGS.info("Customization Done")
     except Exception as e:
-        LOGS.warning(str(e))
+        LOGS.info(str(e))
 
 
 # some stuffs
 async def ready():
+    chat_id = int(udB.get("LOG_CHANNEL"))
+    MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+    BTTS = [Button.inline("Help", "open")]
+    updava = await updater()
     try:
-        chat_id = int(udB.get("LOG_CHANNEL"))
-        MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
-        BTTS = None
-        updava = await updater()
         if updava:
-            BTTS = [[Button.inline(text="Update Available", data="updtavail")]]
-        await ultroid_bot.asst.send_message(chat_id, MSG, buttons=BTTS)
+            BTTS = [
+                [Button.inline("Update Available", "updtavail")],
+                [Button.inline("Help", "open")],
+            ]
+        await asst.send_message(chat_id, MSG, buttons=BTTS)
     except BaseException:
         try:
-            MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
             await ultroid_bot.send_message(chat_id, MSG)
         except Exception as ef:
             LOGS.info(ef)
     try:
         # To Let Them know About New Updates and Changes
-        await ultroid_bot(JoinChannelRequest("@FutureTechnologyOfficial"))
+        await ultroid_bot(JoinChannelRequest("FutureTechnologyOfficial"))
     except BaseException:
         pass
 
 
-if Var.HEROKU_APP_NAME:
-    ws = f"WEBSOCKET_URL=https://{Var.HEROKU_APP_NAME}.herokuapp.com"
-else:
-    ws = f"WEBSOCKET_URL=127.0.0.1"
-lg = f"LOG_CHANNEL={udB.get('LOG_CHANNEL')}"
-bt = f"BOT_TOKEN={udB.get('BOT_TOKEN')}"
-try:
-    with open(".env", "r") as x:
-        m = x.read()
-    if "WEBSOCKET_URL" not in m:
-        with open(".env", "a+") as t:
-            t.write("\n" + ws)
-    if "LOG_CHANNEL" not in m:
-        with open(".env", "a+") as t:
-            t.write("\n" + lg)
-    if "BOT_TOKEN" not in m:
-        with open(".env", "a+") as t:
-            t.write("\n" + bt)
-except BaseException:
-    with open(".env", "w") as t:
-        t.write(ws + "\n" + lg + "\n" + bt)
+def pycli():
+    vcasst.start()
+    multiprocessing.Process(target=idle).start()
+    CallsClient.run()
 
 
-if str(BOT_MODE) != "True":
-    ultroid_bot.loop.run_until_complete(customize())
-    if Plug_channel:
-        ultroid_bot.loop.run_until_complete(plug())
+suc_msg = """
+            ----------------------------------------------------------------------
+                CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed! Visit @CipherXBot for updates!!
+            ----------------------------------------------------------------------
+"""
+
+ultroid_bot.loop.run_until_complete(customize())
+if Plug_channel:
+    ultroid_bot.loop.run_until_complete(plug())
 ultroid_bot.loop.run_until_complete(ready())
 
-LOGS.info(
-    """
-                ----------------------------------------------------------------------
-                    CɪᴘʜᴇʀX Bot has been deployed! Visit @CipherXBot for updates!!
-                ----------------------------------------------------------------------
-"""
-)
 
 if __name__ == "__main__":
-    ultroid_bot.run_until_disconnected()
+    if vcbot:
+        if vcasst and vcClient and CallsClient:
+            multiprocessing.Process(target=pycli).start()
+        LOGS.info(suc_msg)
+        multiprocessing.Process(target=ultroid_bot.run_until_disconnected).start()
+    else:
+        LOGS.info(suc_msg)
+        ultroid_bot.run_until_disconnected()
