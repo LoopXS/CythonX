@@ -1,84 +1,67 @@
 import inspect
+import os
 import re
 import sys
 from pathlib import Path
-from sys import *
 from time import gmtime, sleep, strftime
 from traceback import format_exc
 
 from plugins import ultroid_version as ult_ver
-from telethon import *
 from telethon import __version__ as telever
+from telethon import events
 from telethon.errors.rpcerrorlist import (
     BotMethodInvalidError,
     ChatSendInlineForbiddenError,
     FloodWaitError,
     MessageIdInvalidError,
-    MessageNotModifiedError,
+    UserIsBotError,
 )
 from telethon.utils import get_display_name
 
-from .. import *
-from ..dB.core import *
+from .. import HNDLR, LOGS, asst, udB, ultroid_bot
+from ..dB import DEVLIST
+from ..dB.core import LIST, LOADED
 from ..functions.all import bash
 from ..functions.all import time_formatter as tf
-from ..utils import *
 from ..version import __version__ as pyver
-from ._wrappers import *
-
-# sudo
-ok = udB["SUDOS"]
-if ok:
-    SUDO_USERS = set(int(x) for x in ok.split())
-else:
-    SUDO_USERS = ""
-
-if SUDO_USERS:
-    sudos = list(SUDO_USERS)
-else:
-    sudos = ""
-
-on = udB["SUDO"] if udB["SUDO"] is not None else "False"
-
-if on == "True":
-    sed = [ultroid_bot.uid, *sudos]
-else:
-    sed = [ultroid_bot.uid]
+from . import owner_and_sudos, should_allow_sudo, sudoers, ultroid_bot
+from ._assistant import admin_check
+from ._wrappers import eod
 
 hndlr = "\\" + HNDLR
 
-kek = udB.get("SUDO_PLUGINS")
-
-if kek:
-    SUDO_ALLOWED_PLUGINS = set(str(x) for x in kek.split(" "))
-else:
-    SUDO_ALLOWED_PLUGINS = ""
-
-if SUDO_ALLOWED_PLUGINS:
-    sudoplugs = list(SUDO_ALLOWED_PLUGINS)
-else:
-    sudoplugs = ""
-
 black_list_chats = eval(udB.get("BLACKLIST_CHATS"))
+
+
+def compile_pattern(data, hndlr):
+    if data.startswith(r"\#"):
+        pattern = re.compile(data)
+    else:
+        pattern = re.compile(hndlr + data)
+    return pattern
+
 
 # decorator
 
 
-def ultroid_cmd(allow_sudo=on, **args):
+def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
     args["func"] = lambda e: e.via_bot_id is None
     stack = inspect.stack()
     previous_stack_frame = stack[1]
     file_test = Path(previous_stack_frame.filename)
     file_test = file_test.stem.replace(".py", "")
     pattern = args["pattern"]
+    ppattern = pattern
     groups_only = args.get("groups_only", False)
     admins_only = args.get("admins_only", False)
+    ignore_dual = args.get("ignore_dualmode", False)
+    type = args.get("type", ["official"])
+    manager = udB.get("MANAGER")
+    if udB.get("DUAL_MODE"):
+        type.append("dualmode")
 
     if pattern is not None:
-        if pattern.startswith(r"\#"):
-            args["pattern"] = re.compile(pattern)
-        else:
-            args["pattern"] = re.compile(hndlr + pattern)
+        args["pattern"] = compile_pattern(pattern, hndlr)
         reg = re.compile("(.*)")
         try:
             cmd = re.search(reg, pattern)
@@ -106,94 +89,125 @@ def ultroid_cmd(allow_sudo=on, **args):
     if len(black_list_chats) > 0:
         args["chats"] = black_list_chats
 
-    # check if the plugin should allow edited updates
-    if "allow_edited_updates" in args and args["allow_edited_updates"]:
-        args["allow_edited_updates"]
-        del args["allow_edited_updates"]
     if "admins_only" in args:
         del args["admins_only"]
     if "groups_only" in args:
         del args["groups_only"]
-    # check if the plugin should listen for outgoing 'messages'
+    if "type" in args:
+        del args["type"]
+    if "ignore_dualmode" in args:
+        del args["ignore_dualmode"]
 
     def decorator(func):
-        async def wrapper(ult):
-            if allow_sudo == "False":
-                if not ult.out:
+        pass
+
+        def doit(mode):
+            async def wrapper(ult):
+                if ult.fwd_from:
                     return
-            if not ult.out and (ult.sender_id not in sudos):
-                return
-            chat = await ult.get_chat()
-            naam = get_display_name(chat)
-            if ult.fwd_from:
-                return
-            if groups_only and ult.is_private:
-                return await eod(ult, "`Use this in group/channel.`")
-            if admins_only and not chat.admin_rights:
-                return await eod(ult, "`I am not an admin.`")
+                chat = ult.chat
+                if mode == "official":
+                    if not ult.out:
+                        if not allow_sudo or (str(ult.sender_id) not in sudoers()):
+                            return
+
+                    if hasattr(chat, "title"):
+                        if (
+                            "#noub" in chat.title.lower()
+                            and not (chat.admin_rights or chat.creator)
+                            and not (str(ult.sender_id) in DEVLIST)
+                        ):
+                            return
+                    if admins_only:
+                        if ult.is_private:
+                            return await eod(ult, "`Use this in group/channel.`")
+                        if not (chat.admin_rights or chat.creator):
+                            return await eod(ult, "`I'm not an admin.`")
+                elif mode == "dualmode":
+                    if str(ult.sender_id) not in owner_and_sudos():
+                        return
+                elif mode == "manager":
+                    if not (ult.out or await admin_check(ult)):
+                        return
+                if groups_only and ult.is_private:
+                    return await eod(ult, "`Use this in group/channel.`")
+                try:
+                    await func(ult)
+                except FloodWaitError as fwerr:
+                    await asst.send_message(
+                        int(udB.get("LOG_CHANNEL")),
+                        f"`FloodWaitError:\n{str(fwerr)}\n\nSleeping for {tf((fwerr.seconds + 10)*1000)}`",
+                    )
+                    sleep(fwerr.seconds + 10)
+                    await asst.send_message(
+                        int(udB.get("LOG_CHANNEL")),
+                        "`CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ is working again`",
+                    )
+                except ChatSendInlineForbiddenError:
+                    return await eod(ult, "`Inline Locked in This Chat.`")
+                except (BotMethodInvalidError, UserIsBotError) as boterror:
+                    return await eod(ult, str(boterror))
+                except MessageIdInvalidError:
+                    pass
+                except events.StopPropagation:
+                    raise events.StopPropagation
+                except KeyboardInterrupt:
+                    pass
+                except BaseException as e:
+                    LOGS.exception(e)
+                    date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                    naam = get_display_name(chat)
+                    ftext = "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Client Error:**\n\n"
+                    ftext += "`CythonX Version: " + str(pyver)
+                    ftext += "\nCɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version: " + str(ult_ver)
+                    ftext += "\nTelethon Version: " + str(telever) + "\n\n"
+                    ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
+                    ftext += "\nDate: " + date
+                    ftext += "\nGroup: " + str(ult.chat_id) + " " + str(naam)
+                    ftext += "\nSender ID: " + str(ult.sender_id)
+                    ftext += "\nReplied: " + str(ult.is_reply)
+                    ftext += "\n\nEvent Trigger:\n"
+                    ftext += str(ult.text)
+                    ftext += "\n\nTraceback info:\n"
+                    ftext += str(format_exc())
+                    ftext += "\n\nError text:\n"
+                    ftext += str(sys.exc_info()[1])
+                    ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
+
+                    if len(ftext) > 4096:
+                        with open("logs.txt", "w") as log:
+                            log.write(ftext)
+                        await asst.send_file(
+                            int(udB["LOG_CHANNEL"]),
+                            "logs.txt",
+                            caption="**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Client Error:**\n\n",
+                        )
+                        os.remove("logs.txt")
+                    else:
+                        await asst.send_message(
+                            int(udB["LOG_CHANNEL"]),
+                            ftext,
+                        )
+
+            return wrapper
+
+        if "official" in type:
+            ultroid_bot.add_event_handler(doit("official"), events.NewMessage(**args))
+            wrapper = doit("official")
             try:
-                await func(ult)
-            except MessageIdInvalidError:
-                pass
-            except MessageNotModifiedError:
-                pass
-            except FloodWaitError as fwerr:
-                await ultroid_bot.asst.send_message(
-                    int(udB.get("LOG_CHANNEL")),
-                    f"`FloodWaitError:\n{str(fwerr)}\n\nSleeping for {tf((fwerr.seconds + 10)*1000)}`",
-                )
-                sleep(fwerr.seconds + 10)
-                await ultroid_bot.asst.send_message(
-                    int(udB.get("LOG_CHANNEL")),
-                    "`CɪᴘʜᴇʀX Bot is working again`",
-                )
-            except BotMethodInvalidError:
-                return await eor(
-                    ult,
-                    "`Seems Like You are using BOT_MODE\nYou cant Use This Command !`",
-                )
-            except ChatSendInlineForbiddenError:
-                return await eod(ult, "`Inline Locked In This Chat.`")
-            except events.StopPropagation:
-                raise events.StopPropagation
-            except KeyboardInterrupt:
-                pass
-            except BaseException as e:
-                LOGS.exception(e)
-                date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+                LOADED[file_test].append(wrapper)
+            except Exception:
+                LOADED.update({file_test: [wrapper]})
 
-                ftext = (
-                    "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Client Error:**\n\n"
-                )
-                ftext += "`CythonX Version: " + str(pyver)
-                ftext += "\nCɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version: " + str(ult_ver)
-                ftext += "\nTelethon Version: " + str(telever) + "\n\n"
-                ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
-                ftext += "\nDate: " + date
-                ftext += "\nGroup ID: " + str(ult.chat_id)
-                ftext += "\nSender ID: " + str(ult.sender_id)
-                ftext += "\n\nEvent Trigger:\n"
-                ftext += str(ult.text)
-                ftext += "\n\nTraceback info:\n"
-                ftext += str(format_exc())
-                ftext += "\n\nError text:\n"
-                ftext += str(sys.exc_info()[1])
-                ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
-
-                if int(udB.get("LOG_CHANNEL")):
-                    Placetosend = int(udB.get("LOG_CHANNEL"))
-                else:
-                    Placetosend = ultroid_bot.uid
-                await ultroid_bot.asst.send_message(
-                    Placetosend,
-                    ftext,
-                )
-
-        ultroid_bot.add_event_handler(wrapper, events.NewMessage(**args))
-        try:
-            LOADED[file_test].append(wrapper)
-        except Exception:
-            LOADED.update({file_test: [wrapper]})
-        return wrapper
+        if "assistant" in type:
+            args["pattern"] = compile_pattern(pattern, "/")
+            asst.add_event_handler(doit("assistant"), events.NewMessage(**args))
+        if manager and "manager" in type:
+            args["pattern"] = compile_pattern(pattern, "/")
+            asst.add_event_handler(doit("manager"), events.NewMessage(**args))
+        if not ignore_dual and "dualmode" in type:
+            DH = udB.get("DUAL_HNDLR")
+            args["pattern"] = compile_pattern(ppattern, "\\" + DH)
+            asst.add_event_handler(doit("dualmode"), events.NewMessage(**args))
 
     return decorator
