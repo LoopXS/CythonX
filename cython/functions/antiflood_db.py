@@ -4,8 +4,8 @@ from .. import udB
 
 
 def get_flood():
+    n = []
     if udB.get("ANTIFLOOD"):
-        n = []
         n.append(ast.literal_eval(udB.get("ANTIFLOOD")))
         return n[0]
     else:
@@ -14,24 +14,24 @@ def get_flood():
 
 def set_flood(chat_id, limit):
     omk = get_flood()
-    omk[str(chat_id)] = str(limit)
+    omk[int(chat_id)] = int(limit)
     udB.set("ANTIFLOOD", str(omk))
     return True
 
 
 def get_flood_limit(chat_id):
     omk = get_flood()
-    if str(chat_id) in omk.keys():
-        return omk[str(chat_id)]
+    if int(chat_id) in omk.keys():
+        return omk[int(chat_id)]
     else:
         return None
 
 
 def rem_flood(chat_id):
     omk = get_flood()
-    if str(chat_id) in omk.keys():
+    if int(chat_id) in omk.keys():
         try:
-            del omk[str(chat_id)]
+            del omk[int(chat_id)]
             udB.set("ANTIFLOOD", str(omk))
             return True
         except KeyError:
