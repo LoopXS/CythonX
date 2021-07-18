@@ -1,28 +1,14 @@
-from sys import *
-
-from telethon import *
-
-from . import *
+from importlib import util
+from pathlib import Path
+from sys import modules
 
 
 def load_plugins(plugin_name):
     if plugin_name.startswith("__"):
         pass
-    elif plugin_name.endswith("_"):
-        import importlib
-        from pathlib import Path
-
-        path = Path(f"plugins/{plugin_name}.py")
-        name = "plugins.{}".format(plugin_name)
-        spec = importlib.util.spec_from_file_location(name, path)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
     else:
-        import importlib
-        import sys
-        from pathlib import Path
-
-        from . import HNDLR, LOGS, udB, ultroid_bot
+        from . import HNDLR, LOGS, asst, udB, ultroid_bot
+        from .dB.core import HELP, PLUGINS
         from .dB.database import Var
         from .misc import _supporter as xxx
         from .misc._assistant import (
@@ -38,10 +24,10 @@ def load_plugins(plugin_name):
 
         path = Path(f"plugins/{plugin_name}.py")
         name = "plugins.{}".format(plugin_name)
-        spec = importlib.util.spec_from_file_location(name, path)
-        mod = importlib.util.module_from_spec(spec)
-        mod.asst = ultroid_bot.asst
-        mod.tgbot = ultroid_bot.asst
+        spec = util.spec_from_file_location(name, path)
+        mod = util.module_from_spec(spec)
+        mod.asst = asst
+        mod.tgbot = asst
         mod.ultroid_bot = ultroid_bot
         mod.bot = ultroid_bot
         mod.ultroid = ultroid_bot
@@ -62,20 +48,20 @@ def load_plugins(plugin_name):
         mod.on_cmd = ultroid_cmd
         mod.callback = callback
         mod.Redis = udB.get
-        sys.modules["support"] = xxx
-        sys.modules["userbot"] = xxx
-        sys.modules["userbot.utils"] = xxx
-        sys.modules["userbot.config"] = xxx
+        modules["support"] = xxx
+        modules["userbot"] = xxx
+        modules["userbot.utils"] = xxx
+        modules["userbot.config"] = xxx
         spec.loader.exec_module(mod)
-        sys.modules["plugins." + plugin_name] = mod
+        modules["plugins." + plugin_name] = mod
         if not plugin_name.startswith("_"):
-            try:
+            if plugin_name not in PLUGINS:
                 PLUGINS.append(plugin_name)
+            try:
+                doc = modules[f"plugins.{plugin_name}"].__doc__
+                HELP.update({f"{plugin_name}": doc.format(i=HNDLR)})
             except BaseException:
-                if plugin_name not in PLUGINS:
-                    PLUGINS.append(plugin_name)
-                else:
-                    pass
+                pass
 
 
 # for addons
@@ -84,21 +70,9 @@ def load_plugins(plugin_name):
 def load_addons(plugin_name):
     if plugin_name.startswith("__"):
         pass
-    elif plugin_name.endswith("_"):
-        import importlib
-        from pathlib import Path
-
-        path = Path(f"addons/{plugin_name}.py")
-        name = "addons.{}".format(plugin_name)
-        spec = importlib.util.spec_from_file_location(name, path)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
     else:
-        import importlib
-        import sys
-        from pathlib import Path
-
-        from . import HNDLR, LOGS, udB, ultroid_bot
+        from . import HNDLR, LOGS, asst, udB, ultroid_bot
+        from .dB.core import ADDONS, HELP
         from .dB.database import Var
         from .misc import _supporter as xxx
         from .misc._assistant import (
@@ -115,10 +89,10 @@ def load_addons(plugin_name):
 
         path = Path(f"addons/{plugin_name}.py")
         name = "addons.{}".format(plugin_name)
-        spec = importlib.util.spec_from_file_location(name, path)
-        mod = importlib.util.module_from_spec(spec)
-        mod.asst = ultroid_bot.asst
-        mod.tgbot = ultroid_bot.asst
+        spec = util.spec_from_file_location(name, path)
+        mod = util.module_from_spec(spec)
+        mod.asst = asst
+        mod.tgbot = asst
         mod.ultroid_bot = ultroid_bot
         mod.ub = ultroid_bot
         mod.bot = ultroid_bot
@@ -149,33 +123,33 @@ def load_addons(plugin_name):
         mod.Redis = udB.get
         mod.admin_cmd = admin_cmd
         mod.sudo_cmd = sudo_cmd
-        sys.modules["ub"] = xxx
-        sys.modules["var"] = xxx
-        sys.modules["jarvis"] = xxx
-        sys.modules["support"] = xxx
-        sys.modules["userbot"] = xxx
-        sys.modules["telebot"] = xxx
-        sys.modules["fridaybot"] = xxx
-        sys.modules["jarvis.utils"] = xxx
-        sys.modules["uniborg.util"] = xxx
-        sys.modules["telebot.utils"] = xxx
-        sys.modules["userbot.utils"] = xxx
-        sys.modules["userbot.events"] = xxx
-        sys.modules["jarvis.jconfig"] = xxx
-        sys.modules["userbot.config"] = xxx
-        sys.modules["fridaybot.utils"] = xxx
-        sys.modules["fridaybot.Config"] = xxx
-        sys.modules["userbot.uniborgConfig"] = xxx
+        modules["ub"] = xxx
+        modules["var"] = xxx
+        modules["jarvis"] = xxx
+        modules["support"] = xxx
+        modules["userbot"] = xxx
+        modules["telebot"] = xxx
+        modules["fridaybot"] = xxx
+        modules["jarvis.utils"] = xxx
+        modules["uniborg.util"] = xxx
+        modules["telebot.utils"] = xxx
+        modules["userbot.utils"] = xxx
+        modules["userbot.events"] = xxx
+        modules["jarvis.jconfig"] = xxx
+        modules["userbot.config"] = xxx
+        modules["fridaybot.utils"] = xxx
+        modules["fridaybot.Config"] = xxx
+        modules["userbot.uniborgConfig"] = xxx
         spec.loader.exec_module(mod)
-        sys.modules["addons." + plugin_name] = mod
+        modules["addons." + plugin_name] = mod
         if not plugin_name.startswith("_"):
-            try:
+            if plugin_name not in ADDONS:
                 ADDONS.append(plugin_name)
+            try:
+                doc = modules[f"addons.{plugin_name}"].__doc__
+                HELP.update({f"{plugin_name}": doc.format(i=HNDLR)})
             except BaseException:
-                if plugin_name not in ADDONS:
-                    ADDONS.append(plugin_name)
-                else:
-                    pass
+                pass
 
 
 # for assistant
@@ -184,34 +158,21 @@ def load_addons(plugin_name):
 def load_assistant(plugin_name):
     if plugin_name.startswith("__"):
         pass
-    elif plugin_name.endswith("_"):
-        import importlib
-        from pathlib import Path
-
-        path = Path(f"assistant/{plugin_name}.py")
-        name = "assistant.{}".format(plugin_name)
-        spec = importlib.util.spec_from_file_location(name, path)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
     else:
-        import importlib
-        import sys
-        from pathlib import Path
-
-        from . import HNDLR, udB, ultroid_bot
+        from . import HNDLR, asst, udB, ultroid_bot
         from .misc._assistant import asst_cmd, callback, in_pattern, inline_owner, owner
         from .misc._wrappers import eod, eor
 
         path = Path(f"assistant/{plugin_name}.py")
         name = "assistant.{}".format(plugin_name)
-        spec = importlib.util.spec_from_file_location(name, path)
-        mod = importlib.util.module_from_spec(spec)
+        spec = util.spec_from_file_location(name, path)
+        mod = util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
         mod.ultroid = ultroid_bot
         mod.Redis = udB.get
         mod.udB = udB
         mod.bot = ultroid_bot
-        mod.asst = ultroid_bot.asst
+        mod.asst = asst
         mod.owner = owner()
         mod.in_pattern = in_pattern
         mod.in_owner = inline_owner()
@@ -222,7 +183,7 @@ def load_assistant(plugin_name):
         mod.HNDLR = HNDLR
         mod.asst_cmd = asst_cmd
         spec.loader.exec_module(mod)
-        sys.modules["assistant." + plugin_name] = mod
+        modules["assistant." + plugin_name] = mod
 
 
 # msg forwarder
@@ -231,34 +192,21 @@ def load_assistant(plugin_name):
 def load_pmbot(plugin_name):
     if plugin_name.startswith("__"):
         pass
-    elif plugin_name.endswith("_"):
-        import importlib
-        from pathlib import Path
-
-        path = Path(f"assistant/pmbot/{plugin_name}.py")
-        name = "assistant.pmbot.{}".format(plugin_name)
-        spec = importlib.util.spec_from_file_location(name, path)
-        mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
     else:
-        import importlib
-        import sys
-        from pathlib import Path
-
-        from . import HNDLR, udB, ultroid_bot
+        from . import HNDLR, asst, udB, ultroid_bot
         from .misc._assistant import asst_cmd, callback, owner
         from .misc._wrappers import eod, eor
 
         path = Path(f"assistant/pmbot/{plugin_name}.py")
         name = "assistant.pmbot.{}".format(plugin_name)
-        spec = importlib.util.spec_from_file_location(name, path)
-        mod = importlib.util.module_from_spec(spec)
+        spec = util.spec_from_file_location(name, path)
+        mod = util.module_from_spec(spec)
         mod.ultroid_bot = ultroid_bot
         mod.ultroid = ultroid_bot
         mod.bot = ultroid_bot
         mod.Redis = udB.get
         mod.udB = udB
-        mod.asst = ultroid_bot.asst
+        mod.asst = asst
         mod.owner = owner()
         mod.eod = eod
         mod.eor = eor
@@ -267,4 +215,53 @@ def load_pmbot(plugin_name):
         mod.HNDLR = HNDLR
         mod.asst_cmd = asst_cmd
         spec.loader.exec_module(mod)
-        sys.modules["assistant.pmbot" + plugin_name] = mod
+        modules["assistant.pmbot" + plugin_name] = mod
+
+
+# manager
+
+
+def load_manager(plugin_name):
+    if plugin_name.startswith("__"):
+        pass
+    else:
+        from . import asst, udB, ultroid_bot
+        from .misc._assistant import asst_cmd, callback, owner
+
+        path = Path(f"assistant/manager/{plugin_name}.py")
+        name = "assistant.manager.{}".format(plugin_name)
+        spec = util.spec_from_file_location(name, path)
+        mod = util.module_from_spec(spec)
+        mod.ultroid_bot = ultroid_bot
+        mod.ultroid = ultroid_bot
+        mod.bot = ultroid_bot
+        mod.Redis = udB.get
+        mod.udB = udB
+        mod.asst = asst
+        mod.owner = owner()
+        mod.callback = callback
+        mod.asst_cmd = asst_cmd
+        spec.loader.exec_module(mod)
+        modules["assistant.manager" + plugin_name] = mod
+
+
+def load_vc(plugin_name):
+    if plugin_name.startswith("__"):
+        pass
+    else:
+        from . import CallsClient, udB, ultroid_bot, vcasst, vcClient
+
+        path = Path(f"vcbot/{plugin_name}.py")
+        name = "vcbot.{}".format(plugin_name)
+        spec = util.spec_from_file_location(name, path)
+        mod = util.module_from_spec(spec)
+        mod.ultroid_bot = ultroid_bot
+        mod.ultroid = ultroid_bot
+        mod.bot = ultroid_bot
+        mod.Redis = udB.get
+        mod.udB = udB
+        mod.vcasst = vcasst
+        mod.vcClient = vcClient
+        mod.CallsClient = CallsClient
+        spec.loader.exec_module(mod)
+        modules["vcbot" + plugin_name] = mod
