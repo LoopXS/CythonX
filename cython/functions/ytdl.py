@@ -1,13 +1,16 @@
 import os
 import time
+from urllib.request import urlretrieve
 
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from PIL import Image
 from telethon.tl.types import DocumentAttributeAudio, DocumentAttributeVideo
+from youtube_dl import YoutubeDL
 from youtubesearchpython.__future__ import VideosSearch
 
-from .all import uploader
+from .. import udB
+from .all import dler, uploader
 
 # search youtube
 
@@ -23,34 +26,24 @@ async def get_yt_link(query):
 
 async def download_yt(xx, event, link, ytd):
     st = time.time()
-    info = ytd.extract_info(link, False)
-    title = info["title"]
+    info = await dler(xx, link)
     try:
-        ytd.download([link])
-    except Exception as e:
-        return await xx.edit(f"**ERROR**:\n`{e}`")
+        YoutubeDL(ytd).download([link])
+    except Exception as ex:
+        return await xx.edit(str(ex))
+    title = info["title"]
+    urlretrieve(f"https://i.ytimg.com/vi/{info['id']}/hqdefault.jpg", f"{title}.jpg")
+    thumb = f"{title}.jpg"
     dir = os.listdir()
     if f"{info['id']}.mp3" in dir:
         tm = f"{info['id']}.mp3"
         os.rename(tm, f"{title}.mp3")
         kk = f"{title}.mp3"
-        if f"{tm}.jpg" in dir:
-            thumb = f"{tm}.jpg"
-        elif f"{tm}.webp" in dir:
-            thumb = f"{tm}.webp"
-        else:
-            thumb = "resources/extras/cipherx.jpg"
         caption = f"`{title}`\n`CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ`"
     elif f"{info['id']}.mp4" in dir:
         os.rename(f"{info['id']}.mp4", f"{title}.mkv")
         kk = f"{title}.mkv"
         tm = f"{info['id']}"
-        if f"{tm}.jpg" in dir:
-            thumb = f"{tm}.jpg"
-        elif f"{tm}.webp" in dir:
-            thumb = f"{tm}.webp"
-        else:
-            thumb = "resources/extras/cipherx.jpg"
         caption = f"`{title}`\n\n`CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ`"
     else:
         return
@@ -65,11 +58,11 @@ async def download_yt(xx, event, link, ytd):
         hi = metadata.get("height")
     if metadata.has("duration"):
         duration = metadata.get("duration").seconds
-    if info.get("uploader"):
+    try:
+        author = info["artist"]
+    except KeyError:
         author = info["uploader"]
-    elif metadata.has("artist"):
-        author = metadata.get("artist")
-    else:
+    except KeyError:
         if udB.get("artist"):
             author = udB.get("artist")
         else:
