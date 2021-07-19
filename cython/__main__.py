@@ -63,7 +63,7 @@ if udB.get("TIMEZONE"):
         time.tzset()
     except BaseException:
         LOGS.info(
-            "Incorrect Timezone ,\nCheck Available Timezone\nSo Time is Default Iran"
+            "Incorrect Timezone"
         )
         os.environ["TZ"] = "Iran"
         time.tzset()
@@ -82,7 +82,7 @@ async def autobot():
     if who.username:
         username = who.username + "_bot"
     else:
-        username = "CipherX" + (str(who.id))[5:] + "_bot"
+        username = "CipherX_" + (str(who.id))[5:] + "_bot"
     bf = "Botfather"
     await ultroid_bot(UnblockRequest(bf))
     await ultroid_bot.send_message(bf, "/cancel")
@@ -115,7 +115,7 @@ async def autobot():
     await ultroid_bot.send_read_acknowledge("botfather")
     if isdone.startswith("Sorry,"):
         ran = randint(1, 100)
-        username = "ultroid_" + (str(who.id))[6:] + str(ran) + "_bot"
+        username = "CipherX_" + (str(who.id))[6:] + str(ran) + "_bot"
         await ultroid_bot.send_message(bf, username)
         await asyncio.sleep(1)
         nowdone = (await ultroid_bot.get_messages(bf, limit=1))[0].text
@@ -176,8 +176,8 @@ async def autopilot():
     try:
         r = await ultroid_bot(
             CreateChannelRequest(
-                title="My CɪᴘʜᴇʀX Bot Logs",
-                about="My CɪᴘʜᴇʀX Bot Log Group",
+                title="CɪᴘʜᴇʀX Bot  Logs",
+                about="CɪᴘʜᴇʀX Bot Log Group",
                 megagroup=True,
             ),
         )
@@ -264,7 +264,7 @@ ultroid_bot.loop.run_until_complete(autopilot())
 
 pmbot = udB.get("PMBOT")
 manager = udB.get("MANAGER")
-addons = udB.get("ADDONS")
+addons = udB.get("ADDONS") or Var.ADDONS
 vcbot = udB.get("VC_SESSION") or Var.VC_SESSION
 
 plugin_loader(addons=addons, pmbot=pmbot, manager=manager, vcbot=vcbot)
@@ -351,7 +351,7 @@ async def customize():
             )
             await asyncio.sleep(2)
             await ultroid_bot.send_message(
-                chat_id, "**Auto Customization** Done at @BotFather"
+                chat_id, "**Auto Customisation** Done at @BotFather"
             )
             LOGS.info("Customization Done")
     except Exception as e:
@@ -361,7 +361,7 @@ async def customize():
 # some stuffs
 async def ready():
     chat_id = int(udB.get("LOG_CHANNEL"))
-    MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+    MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖
     BTTS = [Button.inline("Help", "open")]
     updava = await updater()
     try:
@@ -378,7 +378,7 @@ async def ready():
             LOGS.info(ef)
     try:
         # To Let Them know About New Updates and Changes
-        await ultroid_bot(JoinChannelRequest("FutureTechnologyOfficial"))
+        await ultroid_bot(JoinChannelRequest("@FutureTechnologyOfficial"))
     except BaseException:
         pass
 
@@ -391,7 +391,7 @@ def pycli():
 
 suc_msg = """
             ----------------------------------------------------------------------
-                CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed! Visit @CipherXBot for updates!!
+                          CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed
             ----------------------------------------------------------------------
 """
 
