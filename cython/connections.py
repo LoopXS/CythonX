@@ -31,7 +31,7 @@ basicConfig(
     format="%(asctime)s || %(name)s [%(levelname)s] - %(message)s",
     level=INFO,
     datefmt="%m/%d/%Y, %H:%M:%S",
-    handlers=[FileHandler("cipherx.log"), StreamHandler()],
+    handlers=[FileHandler("ultroid.log"), StreamHandler()],
 )
 
 LOGS.info(
@@ -74,16 +74,19 @@ def connect_redis():
             decode_responses=True,
         )
     else:
-        uri, passw = get_redis_vars()
-        redis_info = uri.split(":")
         LOGS.info("Getting Connection With Redis Database")
         time.sleep(3.5)
+        return connect_qovery_redis()
+        """
+        uri, passw = get_redis_vars()
+        redis_info = uri.split(":")
         return redis.Redis(
             host=redis_info[0],
             port=redis_info[1],
             password=passw,
             decode_responses=True,
         )
+        """
 
 
 def redis_connection():
@@ -109,8 +112,8 @@ def redis_connection():
             LOGS.info("Redis Connection Failed.....")
             exit(1)
         else:
-            LOGS.info("Reconnected To Redis Server Successfully")
-    LOGS.info("Successfully Established Connection With Redis DataBase.")
+            LOGS.info("Reconnected To Redis Server Succesfully")
+    LOGS.info("Succesfully Established Connection With Redis DataBase.")
     return our_db
 
 
@@ -163,7 +166,7 @@ def vc_connection(udB):
     return None, None, None
 
 
-def get_redis_vars():
+def connect_qovery_redis():
     uri = config("REDIS_URI", default=None)
     passw = config("REDIS_PASSWORD", default=None)
     if not uri and not passw:
@@ -186,5 +189,11 @@ def get_redis_vars():
             except Exception as er:
                 LOGS.info(er)
                 exit(1)
-            uri = endpoint + ":" + str(port)
-    return uri, passw
+            # uri = endpoint + ":" + str(port)
+    return redis.Redis(
+        host=endpoint,
+        port=str(port),
+        password=passw,
+        decode_responses=True,
+    )
+    # return uri, passw
