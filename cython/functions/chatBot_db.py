@@ -1,53 +1,39 @@
 from .. import udB
 
-
-def str_to_list(text):  # Returns List
-    return text.split(" ")
-
-
-def list_to_str(list):  # Returns String
-    str = "".join(f"{x} " for x in list)
-    return str.strip()
+try:
+    eval(udB["CHATBOT_USERS"])
+except BaseException:
+    udB.set("CHATBOT_USERS", "{}")
 
 
-def are_all_nums(list):  # Takes List , Returns Boolean
-    return all(item.isdigit() for item in list)
+def get_all_added(chat):
+    ok = eval(udB["CHATBOT_USERS"])
+    if ok.get(chat):
+        return ok[chat]
+    return False
 
 
-def get_all_added():  # Returns List
-    cB_added = udB.get("CHATBOT_USERS")
-    if cB_added is None or cB_added == "":
-        return [""]
+def chatbot_stats(chat, id):
+    ok = eval(udB["CHATBOT_USERS"])
+    if ok.get(chat):
+        if id in ok[chat]:
+            return True
+    return False
+
+
+def add_chatbot(chat, id):
+    ok = eval(udB["CHATBOT_USERS"])
+    if not ok.get(chat):
+        ok.update({chat: [id]})
     else:
-        return str_to_list(cB_added)
+        if id not in ok[chat]:
+            ok[chat].append(id)
+    return udB.set("CHATBOT_USERS", str(ok))
 
 
-def chatbot_stats(id):  # Take int or str with numbers only , Returns Boolean
-    if not str(id).isdigit():
-        return False
-    cB_added = get_all_added()
-    return str(id) in cB_added
-
-
-def add_chatbot(id):  # Take int or str with numbers only , Returns Boolean
-    id = str(id)
-    try:
-        cB_added = get_all_added()
-        cB_added.append(id)
-        udB.set("CHATBOT_USERS", list_to_str(cB_added))
-        return True
-    except Exception as e:
-        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/chatBot_db/add_chatbot : {e}")
-        return False
-
-
-def rem_chatbot(id):  # Take int or str with numbers only , Returns Boolean
-    id = str(id)
-    try:
-        cB_added = get_all_added()
-        cB_added.remove(id)
-        udB.set("CHATBOT_USERS", list_to_str(cB_added))
-        return True
-    except Exception as e:
-        print(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ LOG : // functions/chatBot_db/rem_chatbot : {e}")
-        return False
+def rem_chatbot(chat, id):
+    ok = eval(udB["CHATBOT_USERS"])
+    if ok.get(chat):
+        if id in ok[chat]:
+            ok[chat].remove(id)
+    return udB.set("CHATBOT_USERS", str(ok))
