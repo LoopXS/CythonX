@@ -361,7 +361,7 @@ async def customize():
 # some stuffs
 async def ready():
     chat_id = int(udB.get("LOG_CHANNEL"))
-    MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖
+    MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖
     BTTS = [Button.inline("Help", "open")]
     updava = await updater()
     try:
