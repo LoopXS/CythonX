@@ -31,7 +31,7 @@ basicConfig(
     format="%(asctime)s || %(name)s [%(levelname)s] - %(message)s",
     level=INFO,
     datefmt="%m/%d/%Y, %H:%M:%S",
-    handlers=[FileHandler("ultroid.log"), StreamHandler()],
+    handlers=[FileHandler("cipherx.log"), StreamHandler()],
 )
 
 LOGS.info(
