@@ -44,8 +44,10 @@ def plugin_loader(addons=None, pmbot=None, manager=None, vcbot=None):
             )
         except BaseException:
             pass
+        """
         LOGS.info("Installing packages for addons")
         os.system("pip install -r addons/addons.txt")
+        """
         files = sorted(os.listdir("addons"))
         for plugin_name in files:
             try:
@@ -57,7 +59,8 @@ def plugin_loader(addons=None, pmbot=None, manager=None, vcbot=None):
                 LOGS.info(str(type(exc)) + ": " + str(exc))
         LOGS.info("-" * 70)
     else:
-        os.system("cp plugins/__init__.py addons/")
+        pass
+        # os.system("cp plugins/__init__.py addons/")
 
     # group manager
     if manager == "True":
