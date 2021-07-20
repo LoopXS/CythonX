@@ -1,6 +1,6 @@
 import os
 import time
-from logging import INFO, FileHandler, StreamHandler, basicConfig, getLogger
+from logging import INFO, ERROR, FileHandler, StreamHandler, basicConfig, getLogger
 
 import redis
 from decouple import config
@@ -34,6 +34,8 @@ basicConfig(
     handlers=[FileHandler("cipherx.log"), StreamHandler()],
 )
 
+logging.getLogger("pyrogram").setLevel(logging.ERROR)
+ 
 LOGS.info(
     """
                 -----------------------------------
