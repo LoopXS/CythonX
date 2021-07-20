@@ -81,7 +81,7 @@ OAUTH_SCOPE = "https://www.googleapis.com/auth/drive.file"
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
 parent_id = udB.get("GDRIVE_FOLDER_ID")
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
-chatbot_base = "https://api.affiliateplus.xyz/api/chatbot?message={message}&botname=Ultroid&ownername={owner}&user=20"
+chatbot_base = "https://api.affiliateplus.xyz/api/chatbot?message={message}&botname=CipherXBot&ownername={owner}&user=20"
 
 telegraph = Telegraph()
 telegraph.create_account(short_name="CɪᴘʜᴇʀX Bot Commands")
@@ -852,7 +852,7 @@ async def restart(ult):
         execl(executable, executable, "-m", "cython")
 
 
-async def shutdown(ult, dynotype="ultroid"):
+async def shutdown(ult, dynotype="cipherx"):
     ult = await eor(ult, "Shutting Down")
     if Var.HEROKU_APP_NAME and Var.HEROKU_API:
         try:
@@ -1636,7 +1636,7 @@ def get_anime_src_res(search_str):
 
 def get_chatbot_reply(event, message):
     req_link = chatbot_base.format(
-        message=message, owner=(event.sender.first_name or "CipherXBotUser")
+        message=message, owner=(event.sender.first_name or "CipherX")
     )
     try:
         data = requests.get(req_link)
