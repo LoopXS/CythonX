@@ -30,7 +30,7 @@ def inline_owner():
     def decorator(function):
         @functools.wraps(function)
         async def wrapper(event):
-            if event.sender_id in sed:
+            if str(event.sender_id) in owner_and_sudos():
                 try:
                     await function(event)
                 except BaseException:
