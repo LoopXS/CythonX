@@ -44,10 +44,8 @@ def plugin_loader(addons=None, pmbot=None, manager=None, vcbot=None):
             )
         except BaseException:
             pass
-        """
         LOGS.info("Installing packages for addons")
         os.system("pip install -r addons/addons.txt")
-        """
         files = sorted(os.listdir("addons"))
         for plugin_name in files:
             try:
