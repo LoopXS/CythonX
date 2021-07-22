@@ -6,7 +6,7 @@ udB = redis_connection()
 
 ultroid_bot, asst = client_connection()
 
-#vcasst, vcClient, CallsClient = vc_connection(udB)
+vcasst, vcClient, CallsClient = vc_connection(udB)
 
 if not udB.get("HNDLR"):
     udB.set("HNDLR", ".")
