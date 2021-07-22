@@ -7,6 +7,7 @@ from .utils import (
     load_manager,
     load_plugins,
     load_pmbot,
+    load_vc,
 )
 
 
@@ -78,11 +79,11 @@ def plugin_loader(addons=None, pmbot=None, manager=None, vcbot=None):
         LOGS.info("-" * 70)
 
     # vc bot
-#    if vcbot:
-#        files = sorted(os.listdir("vcbot"))
-#        for plugin_name in files:
-#            if plugin_name.endswith(".py"):
-#                load_vc(plugin_name[:-3])
-#            if not plugin_name.startswith("_"):
-#                LOGS.info(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - VC Bot - Installed - {plugin_name}.")
-#        LOGS.info("-" * 70)
+    if vcbot:
+        files = sorted(os.listdir("vcbot"))
+        for plugin_name in files:
+            if plugin_name.endswith(".py"):
+                load_vc(plugin_name[:-3])
+            if not plugin_name.startswith("_"):
+                LOGS.info(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - VC Bot - Installed - {plugin_name}.")
+        LOGS.info("-" * 70)
