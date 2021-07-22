@@ -28,6 +28,7 @@ requirements = [
     "redis",
     "python-decouple==3.3",
     "pytgcalls==1.0.0",
+    "pyrogram", 
     "python-dotenv==0.15.0",
     "cloudscraper",
     "aiofiles",
