@@ -383,10 +383,10 @@ async def ready():
         pass
 
 
-def pycli():
-    vcasst.start()
-    multiprocessing.Process(target=idle).start()
-    CallsClient.run()
+#def pycli():
+#    vcasst.start()
+#    multiprocessing.Process(target=idle).start()
+#    CallsClient.run()
 
 
 suc_msg = """
