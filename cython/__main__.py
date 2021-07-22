@@ -267,7 +267,7 @@ manager = udB.get("MANAGER")
 addons = udB.get("ADDONS") or Var.ADDONS
 vcbot = udB.get("VC_SESSION") or Var.VC_SESSION
 
-plugin_loader(addons=addons, pmbot=pmbot, manager=manager, vcbot=vcbot)
+plugin_loader(addons=addons, pmbot=pmbot, manager=manager)
 
 # for channel plugins
 Plug_channel = udB.get("PLUGIN_CHANNEL")
@@ -402,11 +402,11 @@ ultroid_bot.loop.run_until_complete(ready())
 
 
 if __name__ == "__main__":
-    if vcbot:
-        if vcasst and vcClient and CallsClient:
-            multiprocessing.Process(target=pycli).start()
-        LOGS.info(suc_msg)
-        multiprocessing.Process(target=ultroid_bot.run_until_disconnected).start()
-    else:
-        LOGS.info(suc_msg)
-        ultroid_bot.run_until_disconnected()
+#    if vcbot:
+#        if vcasst and vcClient and CallsClient:
+#            multiprocessing.Process(target=pycli).start()
+#        LOGS.info(suc_msg)
+#        multiprocessing.Process(target=ultroid_bot.run_until_disconnected).start()
+#    else:
+    LOGS.info(suc_msg)
+    ultroid_bot.run_until_disconnected()
