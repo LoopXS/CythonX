@@ -245,23 +245,23 @@ def load_manager(plugin_name):
         modules["assistant.manager" + plugin_name] = mod
 
 
-def load_vc(plugin_name):
-    if plugin_name.startswith("__"):
-        pass
-    else:
-        from . import CallsClient, udB, ultroid_bot, vcasst, vcClient
-
-        path = Path(f"vcbot/{plugin_name}.py")
-        name = "vcbot.{}".format(plugin_name)
-        spec = util.spec_from_file_location(name, path)
-        mod = util.module_from_spec(spec)
-        mod.ultroid_bot = ultroid_bot
-        mod.ultroid = ultroid_bot
-        mod.bot = ultroid_bot
-        mod.Redis = udB.get
-        mod.udB = udB
-        mod.vcasst = vcasst
-        mod.vcClient = vcClient
-        mod.CallsClient = CallsClient
-        spec.loader.exec_module(mod)
-        modules["vcbot" + plugin_name] = mod
+#def load_vc(plugin_name):
+#    if plugin_name.startswith("__"):
+#        pass
+#    else:
+#        from . import CallsClient, udB, ultroid_bot, vcasst, vcClient
+#
+#        path = Path(f"vcbot/{plugin_name}.py")
+#        name = "vcbot.{}".format(plugin_name)
+#        spec = util.spec_from_file_location(name, path)
+#        mod = util.module_from_spec(spec)
+#        mod.ultroid_bot = ultroid_bot
+#        mod.ultroid = ultroid_bot
+#        mod.bot = ultroid_bot
+#        mod.Redis = udB.get
+#        mod.udB = udB
+#        mod.vcasst = vcasst
+#        mod.vcClient = vcClient
+#        mod.CallsClient = CallsClient
+#        spec.loader.exec_module(mod)
+#        modules["vcbot" + plugin_name] = mod
