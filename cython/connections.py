@@ -5,7 +5,7 @@ from logging import INFO, FileHandler, StreamHandler, basicConfig, getLogger
 import redis
 from decouple import config
 from pyrogram import Client
-#from pytgcalls import PyLogs, PyTgCalls
+from pytgcalls import PyLogs, PyTgCalls
 from telethon import TelegramClient
 from telethon import __version__ as vers
 from telethon.errors.rpcerrorlist import (
@@ -148,22 +148,22 @@ def client_connection():
     return client, bot_client
 
 
-#def vc_connection(udB):
-#    VC_SESSION = udB.get("VC_SESSION") or Var.VC_SESSION
-#    if VC_SESSION:
-#        try:
-#            vcasst = Client(
-#                ":memory:",
-#                api_id=Var.API_ID,
-#                api_hash=Var.API_HASH,
-#                bot_token=udB.get("BOT_TOKEN"),
-#            )
-#            vcClient = Client(VC_SESSION, api_id=Var.API_ID, api_hash=Var.API_HASH)
-#            CallsClient = PyTgCalls(vcClient, log_mode=PyLogs.verbose)
-#            return vcasst, vcClient, CallsClient
-#        except Exception as er:
-#            LOGS.info(str(er))
-#    return None, None, None
+def vc_connection(udB):
+    VC_SESSION = udB.get("VC_SESSION") or Var.VC_SESSION
+    if VC_SESSION:
+        try:
+            vcasst = Client(
+                ":memory:",
+                api_id=Var.API_ID,
+                api_hash=Var.API_HASH,
+                bot_token=udB.get("BOT_TOKEN"),
+            )
+            vcClient = Client(VC_SESSION, api_id=Var.API_ID, api_hash=Var.API_HASH)
+            CallsClient = PyTgCalls(vcClient, log_mode=PyLogs.verbose)
+            return vcasst, vcClient, CallsClient
+        except Exception as er:
+            LOGS.info(str(er))
+    return None, None, None
 
 
 def connect_qovery_redis():
