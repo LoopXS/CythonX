@@ -27,8 +27,7 @@ classifiers = [
 requirements = [
     "redis",
     "python-decouple==3.3",
-    "pytgcalls==1.0.0",
-    "pyrogram", 
+    "py-tgcalls==0.5.2",
     "python-dotenv==0.15.0",
     "cloudscraper",
     "aiofiles",
