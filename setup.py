@@ -31,7 +31,7 @@ requirements = [
     "python-dotenv==0.15.0",
     "cloudscraper",
     "aiofiles",
-    "aiohttp",
+    "aiohttp>=3.7.3",
 ]
 
 setuptools.setup(
