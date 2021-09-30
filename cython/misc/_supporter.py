@@ -12,7 +12,10 @@ from cython.misc._wrappers import eod, eor
 from .. import udB, ultroid_bot
 from ..dB.core import LIST
 from ..dB.database import Var
+import logging
+from logging import DEBUG, INFO, basicConfig, getLogger
 
+sedprint = logging.getLogger("CɪᴘʜᴇʀX")
 ALIVE_NAME = ultroid_bot.me.first_name
 BOTLOG = int(udB.get("LOG_CHANNEL"))
 BOTLOG_CHATID = int(udB.get("LOG_CHANNEL"))
