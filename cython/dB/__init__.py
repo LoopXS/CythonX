@@ -1,5 +1,9 @@
 DEVLIST = [
-    "1601105531",
+    1601105531,  # @Hackintush
+]
+
+ULTROID_IMAGES = [
+    "https://telegra.ph/file/fbbd596218b94a5305edb.jpg",
 ]
 
 stickers = [
