@@ -1,66 +1,90 @@
+import asyncio
 import inspect
-import os
 import re
 import sys
+from io import BytesIO
 from pathlib import Path
-from time import gmtime, sleep, strftime
+from time import gmtime, strftime
 from traceback import format_exc
 
-from plugins import ultroid_version as ult_ver
+from telethon import Button
 from telethon import __version__ as telever
 from telethon import events
 from telethon.errors.rpcerrorlist import (
+    AuthKeyDuplicatedError,
     BotMethodInvalidError,
     ChatSendInlineForbiddenError,
+    ChatSendMediaForbiddenError,
+    ChatSendStickersForbiddenError,
     FloodWaitError,
+    MessageDeleteForbiddenError,
     MessageIdInvalidError,
+    MessageNotModifiedError,
     UserIsBotError,
 )
+from telethon.tl import types
 from telethon.utils import get_display_name
 
-from .. import HNDLR, LOGS, asst, udB, ultroid_bot
+from .. import DUAL_HNDLR, HNDLR, LOGS, SUDO_HNDLR, asst, udB, ultroid_bot
 from ..dB import DEVLIST
-from ..dB.core import LIST, LOADED
-from ..functions.all import bash
-from ..functions.all import time_formatter as tf
+from ..dB._core import LIST, LOADED
+from ..dB.sudos import is_fullsudo
+from ..functions.admins import admin_check
+from ..functions.helper import bash
+from ..functions.helper import time_formatter as tf
 from ..version import __version__ as pyver
-from . import owner_and_sudos, should_allow_sudo, sudoers, ultroid_bot
-from ._assistant import admin_check
+from ..version import ultroid_version as ult_ver
+from . import owner_and_sudos, should_allow_sudo
 from ._wrappers import eod
 
 hndlr = "\\" + HNDLR
-
+MANAGER = udB.get("MANAGER")
+TAKE_EDITS = udB.get("TAKE_EDITS")
+DUAL_MODE = udB.get("DUAL_MODE")
 black_list_chats = eval(udB.get("BLACKLIST_CHATS"))
 
 
 def compile_pattern(data, hndlr):
-    if data.startswith(r"\#"):
-        pattern = re.compile(data)
-    else:
-        pattern = re.compile(hndlr + data)
-    return pattern
+    if HNDLR == " ":  # No handler feature
+        return re.compile("^" + data.replace("^", "").replace(".", ""))
+    return (
+        re.compile(hndlr + data.replace("^", "").replace(".", ""))
+        if data.startswith("^")
+        else re.compile(hndlr + data)
+    )
 
 
 # decorator
 
+# Inspiration of ultroid_cmd decor is from RaphielGang/Telegram-Paperlane
+# https://github.com/RaphielGang/Telegram-Paperplane/blob/625875a9ecdfd267a53067b3c1580000f5006973/userbot/events.py#L22
+
 
 def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
-    args["func"] = lambda e: e.via_bot_id is None
+    # With time and addition of Stuff
+    # Decorator has turned lengthy and non attractive.
+    # Todo : Make it better..
+    args["func"] = lambda e: not e.fwd_from and not e.via_bot_id
     stack = inspect.stack()
     previous_stack_frame = stack[1]
     file_test = Path(previous_stack_frame.filename)
     file_test = file_test.stem.replace(".py", "")
     pattern = args["pattern"]
-    ppattern = pattern
+    black_chats = args.get("chats", None)
     groups_only = args.get("groups_only", False)
     admins_only = args.get("admins_only", False)
-    ignore_dual = args.get("ignore_dualmode", False)
+    fullsudo = args.get("fullsudo", False)
+    allow_all = args.get("allow_all", False)
     type = args.get("type", ["official"])
-    manager = udB.get("MANAGER")
-    if udB.get("DUAL_MODE"):
+    only_devs = args.get("only_devs", False)
+    allow_pm = args.get("allow_pm", False)
+    if isinstance(type, str):
+        type = [type]
+    if "official" in type and DUAL_MODE:
         type.append("dualmode")
 
-    if pattern is not None:
+    args["forwards"] = False
+    if pattern:
         args["pattern"] = compile_pattern(pattern, hndlr)
         reg = re.compile("(.*)")
         try:
@@ -85,50 +109,68 @@ def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
                 LIST.update({file_test: [cmd]})
         except BaseException:
             pass
+
     args["blacklist_chats"] = True
     if len(black_list_chats) > 0:
         args["chats"] = black_list_chats
+    if black_chats is not None:
+        if len(black_chats) == 0:
+            args["chats"] = []
+        else:
+            args["chats"] = black_chats
 
-    if "admins_only" in args:
-        del args["admins_only"]
-    if "groups_only" in args:
-        del args["groups_only"]
-    if "type" in args:
-        del args["type"]
-    if "ignore_dualmode" in args:
-        del args["ignore_dualmode"]
+    for i in [
+        "admins_only",
+        "groups_only",
+        "type",
+        "allow_all",
+        "fullsudo",
+        "only_devs",
+        "allow_pm",
+    ]:
+        if i in args:
+            del args[i]
 
     def decorator(func):
         pass
 
         def doit(mode):
             async def wrapper(ult):
-                if ult.fwd_from:
-                    return
                 chat = ult.chat
-                if mode == "official":
-                    if not ult.out:
-                        if not allow_sudo or (str(ult.sender_id) not in sudoers()):
+                if mode in ["dualmode", "official", "sudo"]:
+                    if not ult.out and mode in ["dualmode", "sudo"]:
+                        if (
+                            not allow_all
+                            and str(ult.sender_id) not in owner_and_sudos()
+                        ):
                             return
-
+                        if fullsudo and not is_fullsudo(ult.sender_id):
+                            return await eod(
+                                ult, "`Full Sudo User Required...`", time=15
+                            )
                     if hasattr(chat, "title"):
                         if (
                             "#noub" in chat.title.lower()
                             and not (chat.admin_rights or chat.creator)
-                            and not (str(ult.sender_id) in DEVLIST)
+                            and not (ult.sender_id in DEVLIST)
                         ):
                             return
                     if admins_only:
                         if ult.is_private:
                             return await eod(ult, "`Use this in group/channel.`")
                         if not (chat.admin_rights or chat.creator):
-                            return await eod(ult, "`I'm not an admin.`")
-                elif mode == "dualmode":
-                    if str(ult.sender_id) not in owner_and_sudos():
-                        return
+                            return await eod(ult, "`I am not an admin.`")
                 elif mode == "manager":
-                    if not (ult.out or await admin_check(ult)):
+                    if not allow_pm and ult.is_private:
                         return
+                    elif not (await admin_check(ult)):
+                        return
+                if only_devs and not udB.get("I_DEV"):
+                    return await eod(
+                        ult,
+                        f"**⚠️ Developer Restricted!**\nIf you know what this does, and want to proceed, use\n`{HNDLR}setredis I_DEV True`.\n\nThis Might Be Dangerous.",
+                        time=10,
+                    )
                 if groups_only and ult.is_private:
                     return await eod(ult, "`Use this in group/channel.`")
                 try:
@@ -138,51 +180,66 @@ def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
                         int(udB.get("LOG_CHANNEL")),
                         f"`FloodWaitError:\n{str(fwerr)}\n\nSleeping for {tf((fwerr.seconds + 10)*1000)}`",
                     )
-                    sleep(fwerr.seconds + 10)
+                    await asyncio.sleep(fwerr.seconds + 10)
                     await asst.send_message(
                         int(udB.get("LOG_CHANNEL")),
-                        "`CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ is working again`",
+                        "`CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ is working again`",
                     )
+                    return
                 except ChatSendInlineForbiddenError:
-                    return await eod(ult, "`Inline Locked in This Chat.`")
+                    return await eod(ult, "`Inline Locked In This Chat.`")
+                except (ChatSendMediaForbiddenError, ChatSendStickersForbiddenError):
+                    return await eod(
+                        ult, "`Sending media or sticker is not allowed in this chat.`"
+                    )
                 except (BotMethodInvalidError, UserIsBotError) as boterror:
                     return await eod(ult, str(boterror))
-                except MessageIdInvalidError:
+                except (
+                    MessageIdInvalidError,
+                    MessageNotModifiedError,
+                    MessageDeleteForbiddenError,
+                ):
                     pass
+                except AuthKeyDuplicatedError as er:
+                    LOGS.exception(er)
+                    await asst.send_message(
+                        int(udB.get("LOG_CHANNEL")),
+                        "Session String expired, create new session",
+                    )
+                    exit()
                 except events.StopPropagation:
                     raise events.StopPropagation
                 except KeyboardInterrupt:
                     pass
-                except BaseException as e:
+                except Exception as e:
                     LOGS.exception(e)
                     date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                     naam = get_display_name(chat)
-                    ftext = "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Client Error:**\n\n"
-                    ftext += "`CythonX Version: " + str(pyver)
-                    ftext += "\nCɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version: " + str(ult_ver)
-                    ftext += "\nTelethon Version: " + str(telever) + "\n\n"
-                    ftext += "--------START CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
-                    ftext += "\nDate: " + date
-                    ftext += "\nGroup: " + str(ult.chat_id) + " " + str(naam)
-                    ftext += "\nSender ID: " + str(ult.sender_id)
-                    ftext += "\nReplied: " + str(ult.is_reply)
-                    ftext += "\n\nEvent Trigger:\n"
+                    ftext = "**CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ Client Error:**\n\n"
+                    ftext += "**CythonX Version:** `" + str(pyver)
+                    ftext += "`\n**CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ Version:** `" + str(ult_ver)
+                    ftext += "`\n**Telethon Version:** `" + str(telever) + "`\n\n"
+                    ftext += "--------START CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ CRASH LOG--------"
+                    ftext += "\n**Date:** `" + date
+                    ftext += "`\n**Group:** `" + str(ult.chat_id) + "` " + str(naam)
+                    ftext += "\n**Sender ID:** `" + str(ult.sender_id)
+                    ftext += "`\n**Replied:** `" + str(ult.is_reply)
+                    ftext += "`\n\n**Event Trigger:**`\n"
                     ftext += str(ult.text)
-                    ftext += "\n\nTraceback info:\n"
+                    ftext += "`\n\n**Traceback info:**`\n"
                     ftext += str(format_exc())
-                    ftext += "\n\nError text:\n"
+                    ftext += "`\n\n**Error text:**`\n"
                     ftext += str(sys.exc_info()[1])
-                    ftext += "\n\n--------END CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ CRASH LOG--------"
+                    ftext += "`\n\n--------END CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ CRASH LOG--------"
 
                     if len(ftext) > 4096:
-                        with open("logs.txt", "w") as log:
-                            log.write(ftext)
-                        await asst.send_file(
-                            int(udB["LOG_CHANNEL"]),
-                            "logs.txt",
-                            caption="**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Client Error:**\n\n",
-                        )
-                        os.remove("logs.txt")
+                        with BytesIO(ftext.encode()) as file:
+                            file.name = "logs.txt"
+                            await asst.send_file(
+                                int(udB["LOG_CHANNEL"]),
+                                file,
+                                caption="**CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ Client Error:**\n\n",
+                            )
                     else:
                         await asst.send_message(
                             int(udB["LOG_CHANNEL"]),
@@ -192,22 +249,43 @@ def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
             return wrapper
 
         if "official" in type:
+            args["outgoing"] = True
             ultroid_bot.add_event_handler(doit("official"), events.NewMessage(**args))
-            wrapper = doit("official")
-            try:
-                LOADED[file_test].append(wrapper)
-            except Exception:
-                LOADED.update({file_test: [wrapper]})
+            if TAKE_EDITS:
+                args["func"] = (
+                    lambda x: not (
+                        isinstance(x.chat, types.Channel) and x.chat.broadcast
+                    )
+                    and not x.via_bot_id
+                )
+                ultroid_bot.add_event_handler(
+                    doit("official"),
+                    events.MessageEdited(**args),
+                )
+                args["func"] = lambda e: not e.fwd_from and not e.via_bot_id
+            del args["outgoing"]
 
+            if allow_sudo:
+                args["outgoing"] = False
+                args["pattern"] = compile_pattern(pattern, "\\" + SUDO_HNDLR)
+                ultroid_bot.add_event_handler(doit("sudo"), events.NewMessage(**args))
+                del args["outgoing"]
         if "assistant" in type:
             args["pattern"] = compile_pattern(pattern, "/")
             asst.add_event_handler(doit("assistant"), events.NewMessage(**args))
-        if manager and "manager" in type:
+        if MANAGER and "manager" in type:
             args["pattern"] = compile_pattern(pattern, "/")
             asst.add_event_handler(doit("manager"), events.NewMessage(**args))
-        if not ignore_dual and "dualmode" in type:
-            DH = udB.get("DUAL_HNDLR")
-            args["pattern"] = compile_pattern(ppattern, "\\" + DH)
-            asst.add_event_handler(doit("dualmode"), events.NewMessage(**args))
+
+        if "dualmode" in type:
+            if not (("manager" in type) and (DUAL_HNDLR == "/")):
+                args["pattern"] = compile_pattern(pattern, "\\" + DUAL_HNDLR)
+                asst.add_event_handler(doit("dualmode"), events.NewMessage(**args))
+        # Collecting all Handlers as one..
+        wrapper = doit("official")
+        try:
+            LOADED[file_test].append(wrapper)
+        except Exception:
+            LOADED.update({file_test: [wrapper]})
 
     return decorator
