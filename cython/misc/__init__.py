@@ -1,18 +1,39 @@
-from .. import asst, udB, ultroid_bot  # pylint ignore
+from .. import *
 
 CMD_HELP = {}
+# ----------------------------------------------#
 
 
 def sudoers():
-    return udB["SUDOS"].split()
+    from .. import udB
+
+    if udB.get("SUDOS"):
+        return udB["SUDOS"].split()
+    return []
 
 
 def should_allow_sudo():
-    if udB["SUDO"] == "True":
-        return True
-    else:
-        return False
+    from .. import udB
+
+    return udB.get("SUDO") == "True"
 
 
-def owner_and_sudos():
-    return [str(ultroid_bot.uid), *sudoers()]
+def owner_and_sudos(castint=False):
+    from .. import udB, ultroid_bot
+
+    data = [str(ultroid_bot.uid), *sudoers()]
+    if castint:
+        return [int(a) for a in data]
+    return data
+
+
+# ------------------------------------------------ #
+
+
+def append_or_update(load, func, name, arggs):
+    if isinstance(load, list):
+        return load.append(func)
+    if isinstance(load, dict):
+        if load.get(name):
+            return load[name].append((func, arggs))
+        return load.update({name: [(func, arggs)]})
