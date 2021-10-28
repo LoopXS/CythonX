@@ -1,0 +1,4 @@
+dist/*
+build/*
+cython.egg-info/*
+__pycache__
