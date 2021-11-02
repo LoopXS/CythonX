@@ -34,7 +34,7 @@ class Loader:
                 doc = func(plugin)
             except Exception as exc:
                 doc = None
-                self._logger.info(f"Ultroid - {self.key} - ERROR - {plugin}")
+                self._logger.info(f"CipherX Bot - {self.key} - ERROR - {plugin}")
                 self._logger.exception(exc)
             if func == import_module:
                 plugin = plugin.split(".")[-1]
