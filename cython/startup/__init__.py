@@ -5,13 +5,13 @@ from logging import INFO, WARNING, FileHandler, StreamHandler, basicConfig, getL
 from safety.tools import *
 from telethon import __version__
 
-from ..version import __version__ as __pyUltroid__
+from ..version import __version__ as __cython__
 from ..version import ultroid_version
 
 if os.path.exists("cipherx.log"):
     os.remove("cipherx.log")
 
-LOGS = getLogger("CythonLogs")
+LOGS = getLogger("Cython Logs")
 TeleLogger = getLogger("Telethon")
 TeleLogger.setLevel(WARNING)
 
@@ -31,6 +31,6 @@ LOGS.info(
 )
 
 
-LOGS.info(f"CythonX Version - {__pyUltroid__}")
+LOGS.info(f"CythonX Version - {__cython__}")
 LOGS.info(f"Telethon Version - {__version__}")
 LOGS.info(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version - {ultroid_version}")
