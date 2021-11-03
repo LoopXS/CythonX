@@ -21,9 +21,9 @@ name = "cython"
 author = "CythonX"
 description = "A Secure and Powerful Python-Telethon Based Library For CɪᴘʜᴇʀX Bot."
 license = "GNU AFFERO GENERAL PUBLIC LICENSE (v3)"
-url = "https://github.com/TeamUltroid/pyUltroid"
+url = "https://github.com/ToxygenX/CythonX"
 project_urls = {
-    "Source Code": "https://github.com/ToxygenX/cython",
+    "Source Code": "https://github.com/ToxygenX/CythonX",
 }
 classifiers = [
     "Programming Language :: Python :: 3",
