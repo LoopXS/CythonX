@@ -37,13 +37,16 @@ IN_BTTS=[
 # decorator for assistant
 
 
-def asst_cmd(pattern=None, load=None, **kwargs):
+def asst_cmd(pattern=None, load=None, owner=False, **kwargs):
     """Decorator for assistant's command"""
     name = inspect.stack()[1].filename.split("/")[-1].replace(".py", "")
+    kwargs["forwards"] = False
 
     def ult(func):
         if pattern:
             kwargs["pattern"] = re.compile("^/" + pattern)
+        if owner:
+            kwargs["from_users"] = owner_and_sudos()
         asst.add_event_handler(func, NewMessage(**kwargs))
         if load is not None:
             append_or_update(load, func, name, kwargs)
