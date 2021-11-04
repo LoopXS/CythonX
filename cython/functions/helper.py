@@ -303,7 +303,7 @@ def make_html_telegraph(title, author, text):
     page = client.post(
         title=title,
         author=author,
-        author_url="https://t.me/CipherXBot",
+        author_url="https://t.me/FutureTechnologyOfficial",
         text=text,
     )
     return page["url"]
