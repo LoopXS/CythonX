@@ -165,6 +165,9 @@ def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
                         return
                     elif not (await admin_check(ult)):
                         return
+                elif mode == "assistant":
+                    if not ult.is_private:
+                        return
                 if only_devs and not udB.get("I_DEV"):
                     return await eod(
                         ult,
