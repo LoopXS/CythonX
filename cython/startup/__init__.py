@@ -8,10 +8,10 @@ from telethon import __version__
 from ..version import __version__ as __cython__
 from ..version import ultroid_version
 
-if os.path.exists("cipherx.log"):
-    os.remove("cipherx.log")
+if os.path.exists("heartless.log"):
+    os.remove("heartless.log")
 
-LOGS = getLogger("Cython Logs")
+LOGS = getLogger("Fenix Logs")
 TeleLogger = getLogger("Telethon")
 TeleLogger.setLevel(WARNING)
 
@@ -19,18 +19,18 @@ basicConfig(
     format="%(asctime)s || %(name)s [%(levelname)s] : %(message)s",
     level=INFO,
     datefmt="%m/%d/%Y, %H:%M:%S",
-    handlers=[FileHandler("cipherx.log"), StreamHandler()],
+    handlers=[FileHandler("heartless.log"), StreamHandler()],
 )
 
 LOGS.info(
     """
                 ---------------------------------------------------------
-                        Starting CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Deployment
+                               Starting UserBot Deployment
                 ---------------------------------------------------------
 """
 )
 
 
-LOGS.info(f"CythonX Version - {__cython__}")
+LOGS.info(f"Fenix Version - {__cython__}")
 LOGS.info(f"Telethon Version - {__version__}")
-LOGS.info(f"CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Version - {ultroid_version}")
+LOGS.info(f"UserBot Version - {ultroid_version}")
