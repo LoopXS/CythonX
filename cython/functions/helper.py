@@ -125,20 +125,20 @@ async def safeinstall(event):
         output = "**Plugin** - `{}`\n".format(plug)
         for i in HELP[plug]:
             output += i
-        output += "\n© CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ"
-        await eod(ok, f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{output}")
+        output += "\n✗ @DarkPentesterX"
+        await eod(ok, f"✓ `Heartless Exclusive Bot - Installed`: `{plug}` ✓\n\n{output}")
     elif plug in CMD_HELP:
         output = f"Plugin Name-{plug}\n\n✘ Commands Available-\n\n"
         output += str(CMD_HELP[plug])
-        await eod(ok, f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n{output}")
+        await eod(ok, f"✓ `Heartless Exclusive Bot - Installed`: `{plug}` ✓\n\n{output}")
     else:
         try:
             x = f"Plugin Name-{plug}\n\n✘ Commands Available-\n\n"
             for d in LIST[plug]:
                 x += HNDLR + d + "\n"
-            await eod(ok, f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓\n\n`{x}`")
+            await eod(ok, f"✓ `Heartless Exclusive Bot - Installed`: `{plug}` ✓\n\n`{x}`")
         except BaseException:
-            await eod(ok, f"✓ `CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ - Installed`: `{plug}` ✓")
+            await eod(ok, f"✓ `Heartless Exclusive Bot - Installed`: `{plug}` ✓")
 
 
 # --------------------------------------------------------------------- #
@@ -303,7 +303,7 @@ def make_html_telegraph(title, author, text):
     page = client.post(
         title=title,
         author=author,
-        author_url="https://t.me/FutureTechnologyOfficial",
+        author_url="https://t.me/DarkPentesterX",
         text=text,
     )
     return page["url"]
@@ -469,23 +469,23 @@ async def heroku_logs(event):
         )
     await xx.edit("`Downloading Logs...`")
     ok = app.get_log()
-    with open("cipherx-heroku.log", "w") as log:
+    with open("heartless-heroku.log", "w") as log:
         log.write(ok)
     await event.client.send_file(
         event.chat_id,
-        file="cipherx-heroku.log",
+        file="heartless-heroku.log",
         thumb="resources/extras/cipherx.jpg",
-        caption="**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Heroku Logs.**",
+        caption="**~ Logs**",
     )
 
-    os.remove("cipherx-heroku.log")
+    os.remove("heartless-heroku.log")
     await xx.delete()
 
 
 async def def_logs(ult):
     await ult.client.send_file(
         ult.chat_id,
-        file="cipherx.log",
+        file="heartless.log",
         thumb="resources/extras/cipherx.jpg",
-        caption="**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Logs.**",
+        caption="**~ Logs**",
     )
