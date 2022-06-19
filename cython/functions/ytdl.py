@@ -32,7 +32,7 @@ async def download_yt(event, link, ytd):
     res = await uploader(file, file, time.time(), event, "Uploading...")
     if file.endswith(("mp4", "mkv", "webm")):
         height, width = info["height"], info["width"]
-        caption = f"`{title}`\n\n`CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ`"
+        caption = f"`{title}`\n\n`Heartless UserBot`"
         await event.client.send_file(
             event.chat_id,
             file=res,
@@ -54,7 +54,7 @@ async def download_yt(event, link, ytd):
             author = info["creator"]
         elif info.get("channel"):
             author = info["channel"]
-        caption = f"`{title}`\n\n`CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ`"
+        caption = f"`{title}`\n\n`Heartless UserBot`"
         await event.client.send_file(
             event.chat_id,
             file=res,
