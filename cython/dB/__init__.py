@@ -1,9 +1,9 @@
 DEVLIST = [
-    1601105531,  # @Hackintush
+    5507622871,  # @DarkPentesterX
 ]
 
 ULTROID_IMAGES = [
-    "https://telegra.ph/file/fbbd596218b94a5305edb.jpg",
+    "https://telegra.ph/file/9098ea976b4e104371522.jpg",
 ]
 
 stickers = [
