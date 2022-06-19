@@ -40,7 +40,7 @@ load_other_plugins(addons=addons, pmbot=pmbot, manager=manager, vcbot=vcbot)
 
 suc_msg = """
             ----------------------------------------------------------------------
-                          CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!
+                                 userbot has been deployed!
             ----------------------------------------------------------------------
 """
 
@@ -62,7 +62,7 @@ cleanup_cache()
 
 if __name__ == "__main__":
     LOGS.info(
-        f"Took {time_formatter((time.time() - start_time)*1000)} to start •CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ•"
+        f"Took {time_formatter((time.time() - start_time)*1000)} to start •Heartless UserBot•"
     )
     LOGS.info(suc_msg)
     ultroid_bot.run()
