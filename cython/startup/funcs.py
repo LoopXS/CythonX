@@ -71,7 +71,7 @@ async def autobot():
     if who.username:
         username = who.username + "_bot"
     else:
-        username = "cipherx_" + (str(who.id))[5:] + "_bot"
+        username = "heartless_" + (str(who.id))[5:] + "_bot"
     bf = "@BotFather"
     await ultroid_bot(UnblockRequest(bf))
     await ultroid_bot.send_message(bf, "/cancel")
@@ -156,8 +156,8 @@ async def autopilot():
     try:
         r = await ultroid_bot(
             CreateChannelRequest(
-                title="CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Logs",
-                about="CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ Log Group",
+                title="LogGroup:)",
+                about="~ T.me/DarkPentesterX",
                 megagroup=True,
             ),
         )
@@ -190,7 +190,7 @@ async def autopilot():
     )
     await ultroid_bot(EditAdminRequest(chat_id, asst.me.username, rights, "Assistant"))
     photo = await download_file(
-        "https://telegra.ph/file/fbbd596218b94a5305edb.jpg", "channelphoto.jpg"
+        "https://telegra.ph/file/9098ea976b4e104371522.jpg", "channelphoto.jpg"
     )
     ll = await ultroid_bot.upload_file(photo)
     await ultroid_bot(EditPhotoRequest(chat_id, InputChatUploadedPhoto(ll)))
@@ -243,7 +243,7 @@ async def customize():
         await asyncio.sleep(1)
         await ultroid_bot.send_message(
             "botfather",
-            f"✨ PowerFul CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ ✨\n✨ Master ~ {sir} ✨\n\n✨ Powered By ~ CɪᴘʜᴇʀX ✨",
+            f"✨ PowerFul UserBot ✨\n✨ Master ~ {sir} ✨\n\n✨ Powered By ~ Heartless ✨",
         )
         await asyncio.sleep(2)
         await ultroid_bot.send_message(
@@ -306,7 +306,7 @@ async def ready():
         BTTS = Button.inline("• Click to Start •", "initft_2")
         udB.set("INIT_DEPLOY", "Done")
     else:
-        MSG = f"**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ has been deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @CipherXBot\n➖➖➖➖➖➖➖➖➖"
+        MSG = f"**UserBot Has Been Deployed!**\n➖➖➖➖➖➖➖➖➖\n**UserMode**: [{ultroid_bot.me.first_name}](tg://user?id={ultroid_bot.me.id})\n**Assistant**: @{asst.me.username}\n➖➖➖➖➖➖➖➖➖\n**Support**: @PentesterX_Bot\n➖➖➖➖➖➖➖➖➖"
         BTTS, PHOTO = None, None
         prev_spam = udB.get("LAST_UPDATE_LOG_SPAM")
         if prev_spam:
@@ -337,6 +337,6 @@ async def ready():
         # To Let Them know About New Updates and Changes
         await ultroid_bot(JoinChannelRequest("@FutureTechnologyOfficial"))
     except ChannelsTooMuchError:
-        LOGS.info("Join @FutureTechnologyOfficial to know about new Updates...")
+        LOGS.info("Join @PentesterX to know about new Updates...")
     except Exception as er:
         LOGS.exception(er)
