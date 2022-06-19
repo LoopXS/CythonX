@@ -218,11 +218,11 @@ def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
                     LOGS.exception(e)
                     date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
                     naam = get_display_name(chat)
-                    ftext = "**CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ Client Error:**\n\n"
-                    ftext += "**CythonX Version:** `" + str(pyver)
-                    ftext += "`\n**CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ Version:** `" + str(ult_ver)
+                    ftext = "**Client Error:**\n\n"
+                    ftext += "**Fenix Version:** `" + str(pyver)
+                    ftext += "`\n**Version:** `" + str(ult_ver)
                     ftext += "`\n**Telethon Version:** `" + str(telever) + "`\n\n"
-                    ftext += "--------START CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ CRASH LOG--------"
+                    ftext += "--------START CRASH LOG--------"
                     ftext += "\n**Date:** `" + date
                     ftext += "`\n**Group:** `" + str(ult.chat_id) + "` " + str(naam)
                     ftext += "\n**Sender ID:** `" + str(ult.sender_id)
@@ -233,7 +233,7 @@ def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
                     ftext += str(format_exc())
                     ftext += "`\n\n**Error text:**`\n"
                     ftext += str(sys.exc_info()[1])
-                    ftext += "`\n\n--------END CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ CRASH LOG--------"
+                    ftext += "`\n\n--------END CRASH LOG--------"
 
                     if len(ftext) > 4096:
                         with BytesIO(ftext.encode()) as file:
@@ -241,7 +241,7 @@ def ultroid_cmd(allow_sudo=should_allow_sudo(), **args):
                             await asst.send_file(
                                 int(udB["LOG_CHANNEL"]),
                                 file,
-                                caption="**CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ Client Error:**\n\n",
+                                caption="**Client Error:**\n\n",
                             )
                     else:
                         await asst.send_message(
