@@ -338,7 +338,7 @@ async def get_paste(data: str, extension: str = "txt"):
 async def get_chatbot_reply(message):
     chatbot_base = "https://kukiapi.xyz/api/apikey=ULTROIDUSERBOT/Ultroid/{}/message={}"
     req_link = chatbot_base.format(
-        ultroid_bot.me.first_name or "cipherx bot user",
+        ultroid_bot.me.first_name or "heartless bot user",
         message,
     )
     try:
@@ -478,7 +478,7 @@ def telegraph_client():
         TELEGRAPH.append(TelegraphClient)
         return TelegraphClient
     gd_name = get_display_name(ultroid_bot.me)
-    short_name = gd_name if len(gd_name) < 32 else "CɪᴘʜᴇʀX"
+    short_name = gd_name if len(gd_name) < 32 else "𝒉𝒆𝒂𝒓𝒕𝒍𝒆𝒔𝒔"
     profile_url = (
         f"https://t.me/{ultroid_bot.me.username}" if ultroid_bot.me.username else None
     )
