@@ -15,7 +15,7 @@ from . import CMD_HELP, sudoers  # ignore: pylint
 import logging
 from logging import DEBUG, INFO, basicConfig, getLogger
 
-sedprint = logging.getLogger("CɪᴘʜᴇʀX")
+sedprint = logging.getLogger("𝒉𝒆𝒂𝒓𝒕𝒍𝒆𝒔𝒔")
 ALIVE_NAME = ultroid_bot.me.first_name
 BOTLOG_CHATID = BOTLOG = int(udB.get("LOG_CHANNEL"))
 
@@ -113,7 +113,7 @@ class Config((object)):
             "TMP_DOWNLOAD_DIRECTORY", "resources/downloads/"
         )
         TEMP_DOWNLOAD_DIRECTORY = TMP_DOWNLOAD_DIRECTORY
-        TELEGRAPH_SHORT_NAME = os.environ.get("TELEGRAPH_SHORT_NAME", "CɪᴘʜᴇʀX")
+        TELEGRAPH_SHORT_NAME = os.environ.get("TELEGRAPH_SHORT_NAME", "𝒉𝒆𝒂𝒓𝒕𝒍𝒆𝒔𝒔")
         OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", None)
         G_BAN_LOGGER_GROUP = int(udB.get("LOG_CHANNEL"))
         GOOGLE_SEARCH_COUNT_LIMIT = int(os.environ.get("GOOGLE_SEARCH_COUNT_LIMIT", 9))
