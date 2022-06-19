@@ -43,7 +43,7 @@ def list_files(http):
 async def gsearch(http, query, filename):
     drive_service = build("drive", "v2", http=http)
     page_token = None
-    msg = "**CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
+    msg = "**G-Drive Search:**\n`" + filename + "`\n\n**Results**\n"
     while True:
         response = (
             drive_service.files()
@@ -159,7 +159,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
     media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=True)
     body = {
         "title": file_name,
-        "description": "Uploaded using CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ",
+        "description": "Uploaded Using Userbot",
         "mimeType": mime_type,
     }
     if parent_id is not None:
@@ -194,7 +194,7 @@ async def upload_file(http, file_path, file_name, mime_type, event, parent_id):
                 (
                     (
                         (
-                            "`✦ Uploading to G-Drive by CɪᴘʜᴇʀX ᴇxᴄlusivᴇ ʙᴏᴛ`\n\n"
+                            "`✦ Uploading to G-Drive`\n\n"
                             + f"`✦ File Name:` `{file_name}`\n\n"
                         )
                         + f"{progress_str}\n\n"
