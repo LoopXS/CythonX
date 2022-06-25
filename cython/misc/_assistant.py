@@ -12,9 +12,7 @@ from . import append_or_update, owner_and_sudos
 ULTROID_PIC = "https://telegra.ph/file/2def97874a6005606d5a4.jpg"
 OWNER = get_display_name(ultroid_bot.me)
 
-MSG = f"""
-ᥴᥣiᥴκ ᴛɦᥱ δᥙᴛᴛ᧐ᥒ δᥱᥣ᧐ᥕ ᴛ᧐ ᥴ᧐ᥒᴛᥲᥴᴛ !
-"""
+MSG = f"ᥴᥣiᥴκ ᴛɦᥱ δᥙᴛᴛ᧐ᥒ δᥱᥣ᧐ᥕ ᴛ᧐ ᥴ᧐ᥒᴛᥲᥴᴛ !"
 IN_BTTS=[
     [
         Button.url(
