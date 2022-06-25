@@ -15,9 +15,12 @@ OWNER = get_display_name(ultroid_bot.me)
 MSG = f"""
 ᥴᥣiᥴκ ᴛɦᥱ δᥙᴛᴛ᧐ᥒ δᥱᥣ᧐ᥕ ᴛ᧐ ᥴ᧐ᥒᴛᥲᥴᴛ !
 """
-IN_BTTS = [
+IN_BTTS=[
     [
-        Button.url("✗ ᴅᴇᴠ ✗", url="https://t.me/DarkPentesterX"),
+        Button.url(
+            "✗ ᴅᴇᴠ ✗", 
+            url="https://t.me/DarkPentesterX"
+        ),
     ]
 ]
 
