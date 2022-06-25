@@ -9,26 +9,15 @@ from telethon.utils import get_display_name
 from .. import LOGS, asst, ultroid_bot
 from . import append_or_update, owner_and_sudos
 
-ULTROID_PIC = "https://telegra.ph/file/167a0b85048b04129bd3b.jpg"
+ULTROID_PIC = "https://telegra.ph/file/9098ea976b4e104371522.jpg"
 OWNER = get_display_name(ultroid_bot.me)
 
-MSG = f"""
-**⚜️ CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ ⚜️**
-✵✵✵✵✵✵✵✵✵✵✵✵✵✵
-**Owner**: CɪᴘʜᴇʀX
-**✨ CɪᴘʜᴇʀX is the best ✨**
-✵✵✵✵✵✵✵✵✵✵✵✵✵✵
-➖➖➖➖➖➖➖
-"""
+MSG = f"ᥴᥣiᥴκ ᴛɦᥱ δᥙᴛᴛ᧐ᥒ δᥱᥣ᧐ᥕ ᴛ᧐ ᥴ᧐ᥒᴛᥲᥴᴛ !"
 IN_BTTS=[
     [
         Button.url(
-            "✵CɪᴘʜᴇʀX Ⲃⲟⲧ✵",
-            url="https://t.me/CipherXBot",
-        ),
-        Button.url(
-            "✵Suᴩᴩᴏrᴛ Chᴀnnᴇl✵", 
-            url="https://t.me/FutureTechnologyOfficial"
+            "✗ ᴅᴇᴠ ✗",
+            url="https://t.me/DarkPentesterX"
         ),
     ]
 ]
@@ -60,7 +49,7 @@ def callback(data=None, owner=False, **kwargs):
     def ultr(func):
         async def wrapper(event):
             if owner and not str(event.sender_id) in owner_and_sudos():
-                return await event.answer(f"This is {OWNER} ᴇxᴄlusivᴇ ʙᴏᴛ")
+                return await event.answer(f"This Is {OWNER} Bot!")
             try:
                 await func(event)
             except Exception as er:
@@ -79,9 +68,9 @@ def in_pattern(pattern=None, owner=False, **kwargs):
             if owner and not str(event.sender_id) in owner_and_sudos():
                 res = [
                     await event.builder.article(
-                        title="CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ",
-                        url="https://t.me/CipherXBot",
-                        description="(c) CɪᴘʜᴇʀX Ⲉⲭⲥⳑυⲋⲓⳳⲉ ⲃⲟⲧ",
+                        title="𝒉𝒆𝒂𝒓𝒕𝒍𝒆𝒔𝒔",
+                        url="https://t.me/DarkPentesterX",
+                        description="• 𝒖𝒏 𝒂𝒎𝒂𝒏𝒕 𝒔𝒂𝒏𝒔 𝒄𝒐𝒆𝒖𝒓 | 𝒆𝒏𝒔 𝒑𝒂𝒓𝒊𝒔 🎭",
                         text=MSG,
                         thumb=InputWebDocument(ULTROID_PIC, 0, "image/jpeg", []),
                         buttons=IN_BTTS,
@@ -89,7 +78,7 @@ def in_pattern(pattern=None, owner=False, **kwargs):
                 ]
                 return await event.answer(
                     res,
-                    switch_pm=f"🏴‍☠: Assistant of {OWNER}",
+                    switch_pm=f"👨🏻‍💻: 𝒂𝒔𝒔𝒊𝒔𝒕𝒂𝒏𝒕 𝒐𝒇 {OWNER}",
                     switch_pm_param="start",
                 )
             try:
