@@ -73,7 +73,7 @@ def in_pattern(pattern=None, owner=False, **kwargs):
                         description="• 𝒖𝒏 𝒂𝒎𝒂𝒏𝒕 𝒔𝒂𝒏𝒔 𝒄𝒐𝒆𝒖𝒓 | 𝒆𝒏𝒔 𝒑𝒂𝒓𝒊𝒔 🎭",
                         text=MSG,
                         thumb=InputWebDocument(
-                            "https://telegra.ph/file/dde85d441fa051a0d7d1d.jpg",
+                            "https://telegra.ph/file/9098ea976b4e104371522.jpg",
                             0,
                             "image/jpeg",
                             [],
