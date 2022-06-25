@@ -72,7 +72,12 @@ def in_pattern(pattern=None, owner=False, **kwargs):
                         url="https://t.me/DarkPentesterX",
                         description="• 𝒖𝒏 𝒂𝒎𝒂𝒏𝒕 𝒔𝒂𝒏𝒔 𝒄𝒐𝒆𝒖𝒓 | 𝒆𝒏𝒔 𝒑𝒂𝒓𝒊𝒔 🎭",
                         text=MSG,
-                        thumb=InputWebDocument(ULTROID_PIC, 0, "image/jpeg", []),
+                        thumb=InputWebDocument(
+                            "https://telegra.ph/file/dde85d441fa051a0d7d1d.jpg",
+                            0,
+                            "image/jpeg",
+                            [],
+                        ),
                         buttons=IN_BTTS,
                     )
                 ]
