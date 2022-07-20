@@ -1,5 +1,5 @@
 DEVLIST = [
-    5507622871,  # @DarkPentesterX
+    5507622871,  # @DarkPentester
 ]
 
 ULTROID_IMAGES = [
