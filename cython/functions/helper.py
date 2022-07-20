@@ -125,7 +125,7 @@ async def safeinstall(event):
         output = "**Plugin** - `{}`\n".format(plug)
         for i in HELP[plug]:
             output += i
-        output += "\n✗ @DarkPentesterX"
+        output += "\n✗ @DarkPentester"
         await eod(ok, f"✓ `Heartless Exclusive Bot - Installed`: `{plug}` ✓\n\n{output}")
     elif plug in CMD_HELP:
         output = f"Plugin Name-{plug}\n\n✘ Commands Available-\n\n"
@@ -303,7 +303,7 @@ def make_html_telegraph(title, author, text):
     page = client.post(
         title=title,
         author=author,
-        author_url="https://t.me/DarkPentesterX",
+        author_url="https://t.me/DarkPentester",
         text=text,
     )
     return page["url"]
